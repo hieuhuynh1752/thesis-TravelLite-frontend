@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import {UserRole} from '../../../services/type.api';
+import {UserRole} from '../../../services/api/type.api';
 
 export default async function DashboardRouter() {
   const cookieStore = await cookies();

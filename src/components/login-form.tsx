@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 import * as React from "react";
-import { register, login } from "../../services/api";
+import { register, login } from "../../services/api/auth.api";
 import {useRouter} from "next/navigation";
 
 export function LoginForm({
