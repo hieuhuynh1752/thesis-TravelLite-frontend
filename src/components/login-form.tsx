@@ -1,46 +1,48 @@
-"use client"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+'use client';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-import * as React from "react";
-import { register, login } from "../../services/api/auth.api";
-import {useRouter} from "next/navigation";
+import * as React from 'react';
+import { register, login } from '../../services/api/auth.api';
+import { useRouter } from 'next/navigation';
+import { useUserContext } from '@/contexts/user-context';
 
 export function LoginForm({
   className,
   ...props
-}: React.ComponentPropsWithoutRef<"form">) {
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const router = useRouter()
+}: React.ComponentPropsWithoutRef<'form'>) {
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const router = useRouter();
+  const { setUserInfo } = useUserContext();
 
   const handleRegister = React.useCallback(async () => {
     try {
       await register(email, password);
-      alert("Registration successful!");
+      alert('Registration successful!');
     } catch (err) {
-      console.log("Registration failed: " + err);
+      console.log('Registration failed: ' + err);
     }
-  },[email, password]);
+  }, [email, password]);
 
   const handleLogin = React.useCallback(async () => {
     try {
       const response = await login(email, password);
-      if(response.status === 201){
-        document.cookie = `token=${response.data.access_token}; path=/;`
-        document.cookie = `role=${response.data.user.role}; path=/`
-
-        router.push('/dashboard')
+      if (response.status === 201) {
+        document.cookie = `token=${response.data.access_token}; path=/;`;
+        document.cookie = `role=${response.data.user.role}; path=/`;
+        setUserInfo?.(response.data.user);
+        router.push('/dashboard');
       }
     } catch (err) {
-      console.log("Login failed: " + err);
+      console.log('Login failed: ' + err);
     }
-  },[email, password, router])
+  }, [email, password, router, setUserInfo]);
 
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form className={cn('flex flex-col gap-6', className)} {...props}>
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Login to your account</h1>
         <p className="text-balance text-sm text-muted-foreground">
@@ -50,7 +52,14 @@ export function LoginForm({
       <div className="grid gap-6">
         <div className="grid gap-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={(event) => setEmail(event.target.value)}/>
+          <Input
+            id="email"
+            type="email"
+            placeholder="m@example.com"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
         </div>
         <div className="grid gap-2">
           <div className="flex items-center">
@@ -62,7 +71,13 @@ export function LoginForm({
               Forgot your password?
             </a>
           </div>
-          <Input id="password" type="password" required value={password} onChange={(event)=> setPassword(event.target.value)}/>
+          <Input
+            id="password"
+            type="password"
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
         </div>
         <Button type="button" className="w-full" onClick={handleLogin}>
           Login
@@ -72,10 +87,15 @@ export function LoginForm({
             Or continue with
           </span>
         </div>
-        <Button variant="outline" className="w-full" type="button" onClick={handleRegister}>
+        <Button
+          variant="outline"
+          className="w-full"
+          type="button"
+          onClick={handleRegister}
+        >
           Register
         </Button>
       </div>
     </form>
-  )
+  );
 }
