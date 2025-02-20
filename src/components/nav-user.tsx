@@ -46,7 +46,7 @@ export function NavUser({
     document.cookie = 'role=; Max-Age=0; path=/;';
     logout();
     router.push('/login');
-  }, [router, logout]);
+  }, [router]);
 
   return (
     <SidebarMenu>

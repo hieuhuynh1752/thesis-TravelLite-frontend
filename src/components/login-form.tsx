@@ -16,7 +16,7 @@ export function LoginForm({
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const router = useRouter();
-  const { setUserInfo } = useUserContext();
+  const { setUser } = useUserContext();
 
   const handleRegister = React.useCallback(async () => {
     try {
@@ -33,13 +33,13 @@ export function LoginForm({
       if (response.status === 201) {
         document.cookie = `token=${response.data.access_token}; path=/;`;
         document.cookie = `role=${response.data.user.role}; path=/`;
-        setUserInfo?.(response.data.user);
+        setUser?.(response.data.user);
         router.push('/dashboard');
       }
     } catch (err) {
       console.log('Login failed: ' + err);
     }
-  }, [email, password, router, setUserInfo]);
+  }, [email, password, router, setUser]);
 
   return (
     <form className={cn('flex flex-col gap-6', className)} {...props}>

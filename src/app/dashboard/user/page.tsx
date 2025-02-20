@@ -32,10 +32,7 @@ export default function UserDashboard() {
           email: value.email,
           role: value.role,
         });
-        setEvents?.({
-          created: value.eventsCreated,
-          participated: value.eventsParticipated,
-        });
+        setEvents?.(value.eventsParticipated);
       });
     }
   }, [userId, setUser, setEvents]);
@@ -58,8 +55,7 @@ export default function UserDashboard() {
       handleGetUserData();
     }
   }, [handleGetUserData]);
-  console.log(user);
-  console.log(events);
+
   return (
     <SidebarProvider>
       <SidebarLeft />
@@ -112,12 +108,12 @@ export default function UserDashboard() {
                       </span>
                     </p>
                   </div>
-                  <TodayEventsVerticalStepper data={events} />
+                  <TodayEventsVerticalStepper />
                 </div>
-                <div className="flex flex-col w-3/7 min-w-80 h-full max-h-[80vh] bg-muted p-4 gap-4 rounded-xl">
+                <div className="flex flex-col w-1/4 min-w-96 h-full max-h-[80vh] bg-muted p-4 gap-4 rounded-xl">
                   <p className="text-3xl font-bold">Invitations</p>
                   <PendingEvents
-                    data={events?.participated}
+                    data={events}
                     onUpdate={() => handleGetUserData()}
                   />
                 </div>

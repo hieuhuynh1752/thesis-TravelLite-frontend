@@ -27,12 +27,9 @@ export function NavMain({
 }) {
   const pathname = usePathname();
 
-  const handleSidebarMenuItemClick = React.useCallback(
-    (path: string) => {
-      redirect(path);
-    },
-    [redirect],
-  );
+  const handleSidebarMenuItemClick = React.useCallback((path: string) => {
+    redirect(path);
+  }, []);
 
   return (
     <SidebarGroup>

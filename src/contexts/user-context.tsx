@@ -7,16 +7,13 @@ import {
   UserType,
 } from '../../services/api/type.api';
 
-export type EventsMixedType = {
-  created: EventType[];
-  participated: EventParticipantType[];
-};
-
 type UserContextType = {
   user?: UserType;
-  events?: EventsMixedType;
+  events?: EventParticipantType[];
+  selectedEvent?: EventType;
   setUser?: (userInfo: UserType) => void;
-  setEvents?: (events: EventsMixedType) => void;
+  setEvents?: (events: EventParticipantType[]) => void;
+  setSelectedEvent?: (event?: EventType) => void;
 };
 
 const UserContext = React.createContext<UserContextType | undefined>(undefined);
@@ -25,10 +22,24 @@ export const UserContextProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = React.useState<UserType | undefined>();
-  const [events, setEvents] = React.useState<EventsMixedType | undefined>();
+  const [events, setEvents] = React.useState<
+    EventParticipantType[] | undefined
+  >();
+  const [selectedEvent, setSelectedEvent] = React.useState<
+    EventType | undefined
+  >();
 
   return (
-    <UserContext.Provider value={{ user, setUser, events, setEvents }}>
+    <UserContext.Provider
+      value={{
+        user,
+        setUser,
+        events,
+        setEvents,
+        selectedEvent,
+        setSelectedEvent,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

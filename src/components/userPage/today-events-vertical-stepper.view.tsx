@@ -3,40 +3,38 @@
 import * as React from 'react';
 import { format, isToday, parseISO } from 'date-fns';
 import { EventType } from '../../../services/api/type.api';
-import { EventsMixedType } from '@/contexts/user-context';
 import { Clock, MapPin } from 'lucide-react';
+import { useUserContext } from '@/contexts/user-context';
+import { redirect } from 'next/navigation';
 
-interface TodayEventsVerticalStepperProps {
-  data?: EventsMixedType;
-}
-
-const TodayEventsVerticalStepper = ({
-  data,
-}: TodayEventsVerticalStepperProps) => {
+const TodayEventsVerticalStepper = () => {
   const [todayEvents, setTodayEvents] = React.useState<EventType[]>([]);
+  const { events, setSelectedEvent } = useUserContext();
+
+  const handleSetSelectedEvents = React.useCallback(
+    (event: EventType) => {
+      setSelectedEvent?.(event);
+      redirect('/dashboard/user/events');
+    },
+    [setSelectedEvent],
+  );
 
   React.useEffect(() => {
-    if (data) {
-      let filteredEvents = data.participated
+    if (events) {
+      let filteredEvents = events
         .map((p) => p.event)
         .filter(
           (event) => isToday(event.dateTime) || event.occurrence === 'DAILY',
         );
 
-      filteredEvents = filteredEvents
-        .concat(
-          data.created.filter(
-            (event) => isToday(event.dateTime) || event.occurrence === 'DAILY',
-          ),
-        )
-        .sort(
-          (a, b) =>
-            new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
-        );
+      filteredEvents = filteredEvents.sort(
+        (a, b) =>
+          new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
+      );
 
       setTodayEvents(filteredEvents);
     }
-  }, [data]);
+  }, [events]);
 
   return todayEvents.length === 0 ? (
     <p className="text-muted-foreground">No events scheduled for today.</p>
@@ -46,6 +44,7 @@ const TodayEventsVerticalStepper = ({
         <li
           key={event.id}
           className={`relative flex-1 ${todayEvents.length - 1 === index ? 'after:w-0' : 'after:w-0.5'} after:content-[''] after:h-[70%]  after:bg-gray-300 after:inline-block after:absolute after:-bottom-14 after:left-4 lg:after:left-5 `}
+          onClick={() => handleSetSelectedEvents(event)}
         >
           <a className="flex items-start font-medium">
             {/* Step Indicator */}
@@ -54,7 +53,7 @@ const TodayEventsVerticalStepper = ({
             </span>
 
             {/* Event Details */}
-            <div className="block shadow-none transition-shadow duration-300 cursor-pointer hover:shadow-md hover:shadow-gray-400 p-4 rounded-xl min-w-[50%] max-w-[80%] w-full border-gray-200 border-2">
+            <div className="block shadow-none transition-shadow duration-300 cursor-pointer hover:shadow-md hover:shadow-gray-400 p-4 rounded-xl min-w-[50%] max-w-[80%] w-full border-gray-300 border-2">
               <h3 className="text-lg font-medium">{event.title}</h3>
               <p className="text-sm text-muted-foreground">
                 {event.description}
