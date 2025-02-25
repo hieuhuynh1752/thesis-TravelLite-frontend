@@ -3,54 +3,81 @@ import * as React from 'react';
 import { useTravelContext } from '@/contexts/travel-context';
 import { useGoogleMaps } from '@/contexts/google-maps-context';
 import RouteOptionItem from './route-option-item.view';
+import { Bike, BusFront, Car, Footprints, PlaneTakeoff } from 'lucide-react';
 
 const RouteOptionList: React.FC = () => {
-  const { responses } = useTravelContext();
   const { TravelMode } = useGoogleMaps();
+  const {
+    responses,
+    unavailableTravelModes,
+    selectedTravelMode,
+    setSelectedTravelMode,
+  } = useTravelContext();
 
-  const [travelMode, setTravelMode] = React.useState<google.maps.TravelMode>(
+  React.useEffect(() => {
+    if (responses.length > 0 && selectedTravelMode === undefined) {
+      setSelectedTravelMode(TravelMode.DRIVING);
+    }
+  }, [
     TravelMode.DRIVING,
-  );
+    responses,
+    selectedTravelMode,
+    setSelectedTravelMode,
+  ]);
 
-  if (!responses.length) {
-    return null;
-  }
   return (
     <>
-      <div className="flex items-center justify-evenly p-4 border-b">
+      <div className="flex items-center justify-around">
         <button
-          className={`p-2 hover:bg-gray-100 w-10 rounded ${travelMode === TravelMode.DRIVING ? 'bg-green-500 text-white hover:bg-green-700' : 'bg-white'}`}
-          onClick={() => setTravelMode(TravelMode.DRIVING)}
+          className={`p-2 pb-1 w-10 rounded-sm border-b-4 ${selectedTravelMode === TravelMode.DRIVING ? 'border-green-700 text-green-700 bg-green-50 hover:bg-green-100' : selectedTravelMode && !unavailableTravelModes.has(TravelMode.DRIVING) ? 'hover:bg-gray-100 border-white text-gray-600' : 'bg-gray-300 text-gray-50 border-none'}`}
+          onClick={() => setSelectedTravelMode(TravelMode.DRIVING)}
+          disabled={
+            selectedTravelMode === undefined ||
+            unavailableTravelModes.has(TravelMode.DRIVING)
+          }
         >
-          <i className="fas fa-car"></i>
+          <Car size={24} />
         </button>
         <button
-          className={`p-2 hover:bg-gray-100 w-10 rounded ${travelMode === TravelMode.TRANSIT ? 'bg-green-500 text-white hover:bg-green-700' : 'bg-white'}`}
-          onClick={() => setTravelMode(TravelMode.TRANSIT)}
+          className={`p-2 pb-1 w-10 rounded-sm border-b-4 ${selectedTravelMode === TravelMode.TRANSIT ? 'border-green-700 text-green-700 bg-green-50 hover:bg-green-100' : selectedTravelMode && !unavailableTravelModes.has(TravelMode.TRANSIT) ? 'hover:bg-gray-100 border-white text-gray-600' : 'bg-gray-300 text-gray-50 border-none'}`}
+          onClick={() => setSelectedTravelMode(TravelMode.TRANSIT)}
+          disabled={
+            selectedTravelMode === undefined ||
+            unavailableTravelModes.has(TravelMode.TRANSIT)
+          }
         >
-          <i className="fas fa-bus"></i>
+          <BusFront />
         </button>
         <button
-          className={`p-2 hover:bg-gray-100 w-10 rounded ${travelMode === TravelMode.BICYCLING ? 'bg-green-500 text-white hover:bg-green-700' : 'bg-white'}`}
-          onClick={() => setTravelMode(TravelMode.BICYCLING)}
+          className={`p-2 pb-1 w-10 rounded-sm border-b-4 ${selectedTravelMode === TravelMode.BICYCLING ? 'border-green-700 text-green-700 bg-green-50 hover:bg-green-100' : selectedTravelMode && !unavailableTravelModes.has(TravelMode.BICYCLING) ? 'hover:bg-gray-100 border-white text-gray-600' : 'bg-gray-300 text-gray-50 border-none'}`}
+          onClick={() => setSelectedTravelMode(TravelMode.BICYCLING)}
+          disabled={
+            selectedTravelMode === undefined ||
+            unavailableTravelModes.has(TravelMode.BICYCLING)
+          }
         >
-          <i className="fas fa-bicycle"></i>
+          <Bike />
         </button>
         <button
-          className={`p-2 hover:bg-gray-100 w-10 rounded ${travelMode === TravelMode.WALKING ? 'bg-green-500 text-white hover:bg-green-700' : 'bg-white'}`}
-          onClick={() => setTravelMode(TravelMode.WALKING)}
+          className={`p-2 pb-1 w-10 rounded-sm border-b-4 ${selectedTravelMode === TravelMode.WALKING ? 'border-green-700 text-green-700 bg-green-50 hover:bg-green-100' : selectedTravelMode && !unavailableTravelModes.has(TravelMode.WALKING) ? 'hover:bg-gray-100 border-white text-gray-600' : 'bg-gray-300 text-gray-50 border-none'}`}
+          onClick={() => setSelectedTravelMode(TravelMode.WALKING)}
+          disabled={
+            selectedTravelMode === undefined ||
+            unavailableTravelModes.has(TravelMode.WALKING)
+          }
         >
-          <i className="fas fa-walking"></i>
+          <Footprints />
         </button>
         <button
-          className={`p-2 hover:bg-gray-100 w-10 rounded `}
+          className={`p-2 bg-gray-300 text-gray-50 w-10 rounded `}
           onClick={() => {}}
+          disabled
         >
-          <i className="fas fa-plane"></i>
+          <PlaneTakeoff />
         </button>
       </div>
-      <div className="overflow-auto min-h-[70vh]">
-        <RouteOptionItem travelMode={travelMode} />
+      <div className="flex-1 flex flex-col gap-2 overflow-y-auto bg-muted">
+        <RouteOptionItem travelMode={selectedTravelMode} />
       </div>
     </>
   );

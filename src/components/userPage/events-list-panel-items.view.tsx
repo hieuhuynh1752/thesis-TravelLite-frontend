@@ -14,12 +14,16 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { CheckedState } from '@radix-ui/react-checkbox';
 import { Separator } from '@/components/ui/separator';
 import { useUserContext } from '@/contexts/user-context';
+import { useTravelContext } from '@/contexts/travel-context';
 
 const EventsListPanelItems = () => {
   const [eventsList, setEventsList] =
     React.useState<Map<string, EventType[]>>();
   const [showPassedEvent, setShowPassedEvent] = React.useState(false);
   const { events, selectedEvent, setSelectedEvent } = useUserContext();
+  const { resetAllTravelLogs } = useTravelContext();
+
+  console.log(events, selectedEvent);
 
   const handleEvents = React.useCallback(
     (showAll?: boolean) => {
@@ -43,11 +47,7 @@ const EventsListPanelItems = () => {
             event.occurrence === EventOccurrence.DAILY
               ? new Date().setHours(getHours(event.dateTime))
               : event.dateTime,
-          ).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: '2-digit',
-          });
+          ).toISOString();
           if (upcomingEventsMap.has(dayString)) {
             const newList = upcomingEventsMap.get(dayString);
             newList!.push(event);
@@ -72,10 +72,13 @@ const EventsListPanelItems = () => {
   );
 
   const handleSelectEvent = React.useCallback(
-    (selectedEvent: EventType) => {
-      setSelectedEvent?.(selectedEvent);
+    (newSelectedEvent: EventType) => {
+      if (newSelectedEvent !== selectedEvent) {
+        setSelectedEvent?.(newSelectedEvent);
+        resetAllTravelLogs();
+      }
     },
-    [setSelectedEvent],
+    [resetAllTravelLogs, setSelectedEvent, selectedEvent],
   );
 
   const handleShowAllCheckboxChange = React.useCallback(
@@ -91,7 +94,6 @@ const EventsListPanelItems = () => {
   React.useEffect(() => {
     handleEvents();
   }, [handleEvents]);
-  console.log(eventsList);
   return (
     <div className="flex flex-col pt-4">
       <div className="flex gap-4 p-4 pt-0">
@@ -115,17 +117,25 @@ const EventsListPanelItems = () => {
             No events scheduled for today.
           </p>
         ) : (
-          <div className="grid max-h-[80vh] w-full overflow-y-auto flex-col">
+          <div
+            className="grid w-full overflow-y-auto flex-col"
+            style={{ maxHeight: 'calc(50vh - 2.5rem)' }}
+          >
             {Array.from(eventsList).map(([date, eventsToRender], index) => (
               <div
                 key={index}
-                className={`flex flex-col w-full h-full gap-2 px-4 py-4 ${isPast(date) && !isToday(date) ? 'bg-muted' : 'bg-white'}`}
+                className={`flex w-full h-full gap-4 p-4 ${isPast(date) && !isToday(date) ? 'bg-muted' : 'bg-white'}`}
               >
-                <p className="text-2xl">
-                  <span className="font-bold">{date.split(',')[0]},</span>
-                  <span className="text-gray-500">{date.split(',')[1]}</span>
-                </p>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col text-gray-500">
+                  <p className="text-5xl font-extrabold self-center text-center w-full">
+                    {format(parseISO(date), 'd')}
+                  </p>
+                  <p className="text-lg font-medium px-4">
+                    {format(parseISO(date), 'MMM')}
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-4 flex-1">
                   {eventsToRender.map((event, key) => (
                     <div
                       key={key}

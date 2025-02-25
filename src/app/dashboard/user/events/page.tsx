@@ -17,11 +17,17 @@ import { TravelProvider } from '@/contexts/travel-context';
 import MapContainer from '@/components/userPage/maps/map-container.view';
 import EventsListPanel from '@/components/userPage/events-list-panel.view';
 import EventDetailPanel from '@/components/userPage/event-details-panel.view';
+import NewRoutesPanel from '@/components/userPage/maps/new-routes-panel.view';
 
 export default function UserEvents() {
   const [googleMaps, setGoogleMaps] = React.useState<
     typeof google.maps | undefined
   >(undefined);
+  const [showRoutePanel, setShowRoutePanel] = React.useState(true);
+
+  const toggleShowRoutePanel = React.useCallback(() => {
+    setShowRoutePanel((prevState) => !prevState);
+  }, []);
 
   React.useEffect(() => {
     const role = Cookie.get('role');
@@ -53,14 +59,26 @@ export default function UserEvents() {
         </header>
         <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
           <GoogleMapsContext.Provider value={googleMaps}>
-            <div className="flex flex-1 pr-4">
+            <div className="flex flex-1 gap-2">
               {googleMaps ? (
                 <TravelProvider>
-                  <EventsListPanel />
-                  <Separator orientation="vertical" />
-                  <EventDetailPanel />
-                  <div className="relative flex-1">
-                    <MapContainer />
+                  <div className={`flex flex-1 flex-col`}>
+                    <div className="h-fit">
+                      <MapContainer />
+                    </div>
+                    <div className="max-h-[50vh] flex">
+                      <EventsListPanel />
+                      <Separator orientation="vertical" />
+                      <EventDetailPanel
+                        isRoutesPanelVisible={showRoutePanel}
+                        toggleRoutesPanel={toggleShowRoutePanel}
+                      />
+                    </div>
+                  </div>
+                  <div
+                    className={`${showRoutePanel ? 'w-[27vw] border-l-2' : 'w-0 border-0'} h-[calc(100vh-4rem)] flex border-muted transition-all duration-300 ease-in-out`}
+                  >
+                    <NewRoutesPanel />
                   </div>
                 </TravelProvider>
               ) : (

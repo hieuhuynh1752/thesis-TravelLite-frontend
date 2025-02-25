@@ -24,7 +24,6 @@ export default function UserDashboard() {
 
   const handleGetUserData = React.useCallback(() => {
     if (!!userId) {
-      console.log('here');
       getUserById(userId).then((value) => {
         setUser?.({
           id: value.id,

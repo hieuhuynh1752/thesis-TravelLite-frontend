@@ -17,8 +17,13 @@ const Directions: React.FC<DirectionsProps> = ({ origin, destination }) => {
   const [directionsRenderer, setDirectionsRenderer] =
     React.useState<google.maps.DirectionsRenderer>();
 
-  const { responses, setResponses, selectedRoute, setSelectedRoute } =
-    useTravelContext();
+  const {
+    responses,
+    setResponses,
+    selectedRoute,
+    setSelectedRoute,
+    setUnavailableTravelModes,
+  } = useTravelContext();
   // const [routes, setRoutes] = React.useState<google.maps.DirectionsRoute[]>([]);
   // const [responses, setResponses] = React.useState<
   //   google.maps.DirectionsResult[]
@@ -48,21 +53,32 @@ const Directions: React.FC<DirectionsProps> = ({ origin, destination }) => {
 
         await Promise.all(
           travelModes.map(async (mode) => {
-            const response = await directionsService.route({
-              origin: origin,
-              destination: destination,
-              travelMode: mode,
-              provideRouteAlternatives: true,
-            });
-            // Ensure the response is valid
-            if (response && response.routes && response.routes.length > 0) {
-              responses.push(response);
-            } else {
-              console.warn(`No routes found for travel mode: ${mode}`);
+            try {
+              const response = await directionsService.route({
+                origin: { placeId: origin } as google.maps.Place,
+                destination: { placeId: destination } as google.maps.Place,
+                travelMode: mode,
+                provideRouteAlternatives: true,
+              });
+              // Ensure the response is valid
+              if (response && response.routes && response.routes.length > 0) {
+                responses.push(response);
+              } else {
+                console.warn(`No routes found for travel mode: ${mode}`);
+              }
+            } catch (error) {
+              setUnavailableTravelModes((prevState) => {
+                const newState = prevState;
+                newState.add(mode);
+                return newState;
+              });
+              console.warn(
+                `Failed to fetch directions for mode: ${mode}`,
+                error,
+              );
             }
           }),
         );
-
         setResponses(responses);
         setSelectedRoute({ routes: responses[0], index: 0 });
         directionsRenderer.setDirections(responses[0]);
@@ -79,6 +95,7 @@ const Directions: React.FC<DirectionsProps> = ({ origin, destination }) => {
     destination,
     travelModes,
     setResponses,
+    setUnavailableTravelModes,
   ]);
 
   // Update direction route

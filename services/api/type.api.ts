@@ -51,6 +51,9 @@ export interface PlaceType {
   id: number;
   name: string;
   address: string;
+  googlePlaceId: string;
+  latitude: number;
+  longtitude: number;
 }
 
 export interface TravelPlanType {
@@ -89,6 +92,7 @@ export interface Step {
   shortName?: string;
   summary?: string;
   co2?: number; // Calculated COc emission
+  steps?: google.maps.DirectionsStep[];
 }
 
 export interface TransitRoute {
@@ -102,7 +106,12 @@ export interface TransitRoute {
 export function isTransitRoutes(
   routes: Step[] | TransitRoute[],
 ): routes is TransitRoute[] {
-  return (routes as TransitRoute[])[0].steps !== undefined;
+  return (
+    routes.length > 0 &&
+    ((routes as TransitRoute[])[0].steps[0].line !== undefined ||
+      (routes as TransitRoute[])[0].steps[0].type ===
+        google.maps.TravelMode.WALKING)
+  );
 }
 
 export interface EnrichedStepsResponse {

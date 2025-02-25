@@ -4,19 +4,34 @@ import * as React from 'react';
 import { Map } from '@vis.gl/react-google-maps';
 import Directions from './direction.view';
 import { useTravelContext } from '@/contexts/travel-context';
+import { useUserContext } from '@/contexts/user-context';
+import { MarkerWithInfoWindow } from '@/components/userPage/maps/custom-marker.view';
 
 const MapContainer: React.FC = () => {
   const { searchDirection } = useTravelContext();
+  const { selectedEvent } = useUserContext();
+
+  const location = React.useMemo(() => {
+    if (!searchDirection && selectedEvent && selectedEvent.location) {
+      return {
+        lat: selectedEvent?.location.latitude,
+        lng: selectedEvent?.location.longtitude,
+      };
+    }
+  }, [selectedEvent, searchDirection]);
 
   return (
     <div className="flex flex-col items-center">
       {/* Input fields for origin and destination */}
-      <div style={{ width: '100%', height: 'calc(100vh - 90px)' }}>
+      <div style={{ width: '100%', height: '40vh' }}>
         <Map
           defaultCenter={{ lat: 52.377956, lng: 4.89707 }}
-          defaultZoom={10}
+          defaultZoom={12}
           gestureHandling={'greedy'}
+          center={location}
+          mapId={'bf51a910020fa25a'}
         >
+          {location && <MarkerWithInfoWindow position={location} />}
           {searchDirection && (
             <Directions
               origin={searchDirection.origin}
@@ -29,4 +44,4 @@ const MapContainer: React.FC = () => {
   );
 };
 
-export default React.memo(MapContainer);
+export default MapContainer;

@@ -3,8 +3,10 @@ import api from './api';
 import { EnrichedStepsResponse, Step } from './type.api';
 
 export const fetchEmissions = async (
-  steps: Step[],
+  steps: Pick<Step, 'duration' | 'type' | 'vehicleType'>[],
 ): Promise<EnrichedStepsResponse> => {
-  const response = await api.post('/calculate', steps);
+  const response = await api.post('/emissionFactors/calculate', {
+    steps: steps,
+  });
   return response.data;
 };

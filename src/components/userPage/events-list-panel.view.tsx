@@ -14,7 +14,6 @@ const EventsListPanel = () => {
 
   const handleGetUserData = React.useCallback(() => {
     if (!!userId) {
-      console.log('here');
       getUserById(userId).then((value) => {
         setUser?.({
           id: value.id,
@@ -38,7 +37,7 @@ const EventsListPanel = () => {
   }, [handleGetUserData]);
 
   return (
-    <div className="flex flex-col w-1/4 gap-4">
+    <div className="flex flex-col w-3/4 gap-4">
       <EventsListPanelItems />
     </div>
   );
