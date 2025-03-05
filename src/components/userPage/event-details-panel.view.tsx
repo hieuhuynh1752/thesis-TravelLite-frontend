@@ -16,7 +16,7 @@ import {
   Users,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
-import { EventParticipantStatus } from '../../../services/api/type.api';
+import ParticipantChip from '@/components/ui/chip';
 
 interface EventDetailPanelProps {
   isRoutesPanelVisible: boolean;
@@ -62,24 +62,24 @@ function EventDetailPanel({
             : 'undefined'}
         </div>
         <div
-          className={`text-gray-700 ${eventDetailExpanded ? '' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
+          className={`text-gray-700 ${eventDetailExpanded ? 'flex flex-col gap-2' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
         >
-          <div className="inline-flex italic text-gray-500 items-baseline gap-1 pr-2">
+          <div className="inline-flex italic font-semibold text-gray-500 items-baseline gap-1 pr-2">
             <Users size={16} className="self-center" /> Participants:{' '}
           </div>
-          {selectedEvent &&
-            selectedEvent.participants
-              .filter(
-                (participant) =>
-                  participant.id !== user?.id &&
-                  participant.status === EventParticipantStatus.ACCEPTED,
-              )
-              .map((participant, index, participants) => (
-                <span key={index}>
-                  {participant.user.name}
-                  {index === participants.length - 1 ? '' : ', '}
-                </span>
-              ))}
+          <div className="flex flex-wrap flex-1">
+            {selectedEvent &&
+              selectedEvent.participants
+                .filter((participant) => participant.user.id !== user?.id)
+                .map((participant, index) => (
+                  <ParticipantChip
+                    username={participant.user.name}
+                    key={index}
+                    hideClearButton
+                    status={participant.status}
+                  />
+                ))}
+          </div>
         </div>
         <div
           className={`text-gray-700 ${eventDetailExpanded ? '' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
@@ -112,14 +112,15 @@ function EventDetailPanel({
       <div
         className={`min-h-10 flex flex-col gap-4 transition-all duration-600 ease-in-out overflow-hidden`}
       >
-        <div className={`flex justify-between items-center`}>
+        <div className={`flex justify-between items-center py-1`}>
           <div className="inline-flex items-baseline gap-1 pr-2 text-gray-500 text-2xl">
             <MapPin size={24} className="self-center" /> Location:{' '}
             {selectedEvent?.location.name}
           </div>
           <Button
             onClick={() => toggleRoutesPanel()}
-            // className="after:w-64 bg-black"
+            variant={'ghost'}
+            className="border-gray-500 border-2 p-2 py-1 mr-1"
           >
             {isRoutesPanelVisible ? (
               <ChevronsRight size={8} />

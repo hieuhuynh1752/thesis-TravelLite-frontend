@@ -18,6 +18,7 @@ import {
   Leaf,
   TrainFront,
 } from 'lucide-react';
+import { useGoogleMaps } from '@/contexts/google-maps-context';
 
 const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
   travelMode,
@@ -28,6 +29,7 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
     setSelectedRoute,
     setFlattenedSelectedRoute,
   } = useTravelContext();
+  const { TravelMode } = useGoogleMaps();
 
   const [routes, setRoutes] = React.useState<TransitRoute[] | Step[]>([]);
   const [expandedRouteIndex, setExpandedRouteIndex] = React.useState<
@@ -108,7 +110,6 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
     (index: number, id: string) => {
       setSelectedRoute({ routes: rawResult, index, hashedId: id });
       setExpandedRouteIndex(index === expandedRouteIndex ? null : index); // Toggle expansion
-      // console.log(rawResult?.routes[index].legs[0], routes[index].legs[0]);
       const leg = rawResult?.routes[index].legs[0];
       if (leg) {
         const travelSteps: FlattenedTravelStep[] = leg?.steps.map((step) => {
@@ -287,6 +288,9 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
 
   console.log(routes, isTransitRoutes(routes));
 
+  if (!TravelMode) {
+    return null;
+  }
   return (
     <div className="p-2 bg-gray-100 min-h-full h-fit">
       {travelMode === google.maps.TravelMode.TRANSIT && isTransitRoutes(routes)

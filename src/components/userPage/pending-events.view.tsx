@@ -10,6 +10,7 @@ import { format, parseISO } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { updateParticipantStatus } from '../../../services/api/event-participant.api';
+import { toast } from 'sonner';
 
 interface PendingEventsProps {
   data?: EventParticipantType[];
@@ -22,9 +23,14 @@ const PendingEvents = ({ data, onUpdate }: PendingEventsProps) => {
   >([]);
 
   const handleInvitationUpdate = React.useCallback(
-    (invitationId: number, status: EventParticipantStatus) => {
+    (
+      invitationId: number,
+      eventTitle: string,
+      status: EventParticipantStatus,
+    ) => {
       updateParticipantStatus(invitationId, { status });
       onUpdate?.();
+      toast(`You have ${status.toLowerCase()} the event: ${eventTitle}!`);
     },
     [onUpdate],
   );
@@ -99,6 +105,7 @@ const PendingEvents = ({ data, onUpdate }: PendingEventsProps) => {
               onClick={() =>
                 handleInvitationUpdate(
                   invitation.id,
+                  invitation.event.title,
                   EventParticipantStatus.DECLINED,
                 )
               }
@@ -111,6 +118,7 @@ const PendingEvents = ({ data, onUpdate }: PendingEventsProps) => {
               onClick={() =>
                 handleInvitationUpdate(
                   invitation.id,
+                  invitation.event.title,
                   EventParticipantStatus.ACCEPTED,
                 )
               }

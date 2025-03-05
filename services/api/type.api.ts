@@ -75,6 +75,18 @@ export interface EventType {
   travelPlans?: TravelPlanType[];
 }
 
+export interface FlatEventType {
+  id: number;
+  creatorId: number;
+  participantIds?: number[];
+  locationId: number | null;
+  dateTime: Date;
+  occurrence: EventOccurrence;
+  title: string;
+  description?: string;
+  createdAt?: Date;
+}
+
 export interface Step {
   type: string;
   distance: number;

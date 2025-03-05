@@ -7,6 +7,10 @@ import {
   isPast,
   isToday,
   parseISO,
+  setHours,
+  setMilliseconds,
+  setMinutes,
+  setSeconds,
 } from 'date-fns';
 import { EventOccurrence, EventType } from '../../../services/api/type.api';
 import { Clock, Repeat } from 'lucide-react';
@@ -23,8 +27,6 @@ const EventsListPanelItems = () => {
   const { events, selectedEvent, setSelectedEvent } = useUserContext();
   const { resetAllTravelLogs } = useTravelContext();
 
-  console.log(events, selectedEvent);
-
   const handleEvents = React.useCallback(
     (showAll?: boolean) => {
       if (events) {
@@ -39,15 +41,27 @@ const EventsListPanelItems = () => {
             );
         const sortedEvents = filteredEvents.sort(
           (a, b) =>
-            new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
+            new Date(
+              a.occurrence === EventOccurrence.DAILY ? '' : a.dateTime,
+            ).getTime() -
+            new Date(
+              a.occurrence === EventOccurrence.DAILY ? '' : b.dateTime,
+            ).getTime(),
         );
+        console.log(sortedEvents);
         const upcomingEventsMap = new Map<string, EventType[]>();
         for (const event of sortedEvents) {
-          const dayString = new Date(
+          let dayObject = new Date(
             event.occurrence === EventOccurrence.DAILY
               ? new Date().setHours(getHours(event.dateTime))
               : event.dateTime,
-          ).toISOString();
+          );
+          dayObject = setHours(
+            setMinutes(setSeconds(setMilliseconds(dayObject, 0), 0), 0),
+            0,
+          );
+          const dayString = dayObject.toISOString();
+          console.log(dayString);
           if (upcomingEventsMap.has(dayString)) {
             const newList = upcomingEventsMap.get(dayString);
             newList!.push(event);

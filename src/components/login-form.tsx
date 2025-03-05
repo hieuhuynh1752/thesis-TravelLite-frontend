@@ -8,6 +8,7 @@ import * as React from 'react';
 import { register, login } from '../../services/api/auth.api';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/user-context';
+import { toast } from 'sonner';
 
 export function LoginForm({
   className,
@@ -21,9 +22,9 @@ export function LoginForm({
   const handleRegister = React.useCallback(async () => {
     try {
       await register(email, password);
-      alert('Registration successful!');
+      toast('Registration successful!');
     } catch (err) {
-      console.log('Registration failed: ' + err);
+      toast('Registration failed: ' + err);
     }
   }, [email, password]);
 
@@ -35,9 +36,10 @@ export function LoginForm({
         document.cookie = `role=${response.data.user.role}; path=/`;
         setUser?.(response.data.user);
         router.push('/dashboard');
+        toast('Login successful! Welcome back!');
       }
     } catch (err) {
-      console.log('Login failed: ' + err);
+      toast('Login failed: ' + err);
     }
   }, [email, password, router, setUser]);
 

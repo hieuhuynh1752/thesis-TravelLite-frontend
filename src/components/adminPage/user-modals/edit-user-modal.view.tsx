@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { updateUser } from '../../../../services/api/user.api';
+import { toast } from 'sonner';
 
 export default function EditUserModal({
   userData,
@@ -39,9 +40,9 @@ export default function EditUserModal({
       await updateUser(userData.id, { name: username } as UserType).then(() =>
         onClose?.(),
       );
-      alert('Update successful!');
+      toast('User Update successful!');
     } catch (err) {
-      console.log('Update failed: ' + err);
+      toast('Update failed: ' + err);
     }
   }, [onClose, userData.id, username]);
 

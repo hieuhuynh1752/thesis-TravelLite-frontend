@@ -1,26 +1,52 @@
+'use client';
+
 import * as React from 'react';
+import { Map } from '@vis.gl/react-google-maps';
+import Directions from './direction.view';
+import { useTravelContext } from '@/contexts/travel-context';
+import { useUserContext } from '@/contexts/user-context';
+import { MarkerWithInfoWindow } from '@/components/userPage/maps/custom-marker.view';
 
-type MapProps = {
-  center: google.maps.LatLngLiteral;
-  zoom: number;
-  onLoad?: (map: google.maps.Map) => void;
+const MapContainer: React.FC = () => {
+  const { searchDirection } = useTravelContext();
+  const { selectedEvent } = useUserContext();
+
+  const location = React.useMemo(() => {
+    if (!searchDirection && selectedEvent && selectedEvent.location) {
+      return {
+        lat: selectedEvent?.location.latitude,
+        lng: selectedEvent?.location.longtitude,
+      };
+    }
+  }, [selectedEvent, searchDirection]);
+
+  return (
+    <div className="flex flex-col items-center">
+      {/* Input fields for origin and destination */}
+      <div style={{ width: '100%', height: '40vh' }}>
+        <Map
+          defaultCenter={{ lat: 52.377956, lng: 4.89707 }}
+          defaultZoom={12}
+          gestureHandling={'greedy'}
+          center={location}
+          mapId={'bf51a910020fa25a'}
+        >
+          {location && (
+            <MarkerWithInfoWindow
+              position={location}
+              description={selectedEvent?.location.name}
+            />
+          )}
+          {searchDirection && (
+            <Directions
+              origin={searchDirection.origin}
+              destination={searchDirection.destination}
+            />
+          )}
+        </Map>
+      </div>
+    </div>
+  );
 };
 
-const Map: React.FC<MapProps> = ({ center, zoom, onLoad }) => {
-  const mapRef = React.useRef<HTMLDivElement | null>(null);
-
-  React.useEffect(() => {
-    if (!mapRef.current) return;
-
-    const map = new google.maps.Map(mapRef.current, {
-      center,
-      zoom,
-    });
-
-    if (onLoad) onLoad(map);
-  }, [center, zoom, onLoad]);
-
-  return <div ref={mapRef} style={{ height: '100%', width: '100%' }} />;
-};
-
-export default Map;
+export default MapContainer;

@@ -10,21 +10,26 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { CommandLoading } from 'cmdk';
-import { useTravelContext } from '@/contexts/travel-context';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 
 type GoogleMapsAutocompleteProps = {
+  inputValue: string;
+  onInputValueChange: (value: string) => void;
   onSelect: (place: google.maps.places.PlaceResult | null) => void;
+  className?: string;
 };
 
-const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = ({
-  onSelect,
-}) => {
+const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = (
+  props,
+) => {
   const map = useMap();
   const places = useMapsLibrary('places');
   const [suggestions, setSuggestions] =
     React.useState<Array<google.maps.places.AutocompletePrediction> | null>(
       null,
     );
+  const [value, setValue] = React.useState(props.inputValue);
   const [sessionToken, setSessionToken] =
     React.useState<google.maps.places.AutocompleteSessionToken | null>(null);
   const [autocompleteService, setAutocompleteService] =
@@ -32,7 +37,7 @@ const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = ({
   const [placesService, setPlacesService] =
     React.useState<google.maps.places.PlacesService | null>(null);
   const [fetchingData, setFetchingData] = React.useState<boolean>(false);
-  const { originValue, setOriginValue } = useTravelContext();
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     if (!places || !map) return;
@@ -59,10 +64,11 @@ const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = ({
 
   const onInputChange = React.useCallback(
     (searchValue: string) => {
-      setOriginValue(searchValue);
+      // props.onInputValueChange?.(searchValue);
+      setValue(searchValue);
       fetchPlaceDetails(searchValue);
     },
-    [fetchPlaceDetails, setOriginValue],
+    [fetchPlaceDetails],
   );
 
   const handleSuggestionClick = React.useCallback(
@@ -77,9 +83,9 @@ const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = ({
       const detailsRequestCallback = (
         placeDetails: google.maps.places.PlaceResult | null,
       ) => {
-        onSelect?.(placeDetails);
+        props.onSelect?.(placeDetails);
         setSuggestions(null);
-        setOriginValue(placeDetails?.formatted_address ?? '');
+        props.onInputValueChange?.(placeDetails?.formatted_address ?? '');
         setSessionToken(new places.AutocompleteSessionToken());
 
         setFetchingData(false);
@@ -87,7 +93,7 @@ const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = ({
 
       placesService?.getDetails(detailRequestOptions, detailsRequestCallback);
     },
-    [onSelect, places, placesService, sessionToken, setOriginValue],
+    [places, placesService, props, sessionToken],
   );
 
   const CommandItemsList = React.useCallback(() => {
@@ -103,14 +109,33 @@ const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = ({
   }, [handleSuggestionClick, suggestions]);
 
   return (
-    <div className="w-full max-w-md border-2 rounded-md">
+    <div
+      className={
+        'w-full max-w-md border-2 focus-within:border-gray-700 rounded-lg ' +
+        props.className
+      }
+    >
       <Command shouldFilter={false}>
         <CommandInput
           placeholder="Search for a place"
-          value={originValue}
+          value={value}
           onValueChange={(event) => onInputChange(event)}
           className="w-full"
-        />
+          ref={inputRef}
+        >
+          {props.inputValue && (
+            <Button
+              variant="ghost"
+              className={'px-1 py-0 ml-2 h-6 rounded-sm'}
+              onClick={() => {
+                onInputChange('');
+                inputRef?.current?.focus();
+              }}
+            >
+              <X />
+            </Button>
+          )}
+        </CommandInput>
         <CommandList className="z-10 bg-muted">
           {fetchingData && <CommandLoading />}
           {suggestions !== null && (

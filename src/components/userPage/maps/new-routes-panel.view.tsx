@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import GoogleMapsAutocomplete from '@/components/userPage/maps/origin-autocomplete.view';
+import GoogleMapsAutocomplete from '@/components/userPage/maps/places-autocomplete.view';
 import { useUserContext } from '@/contexts/user-context';
 import { ArrowLeft, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import {
 } from '../../../../services/api/travel-plan.api';
 import RouteDetails from '@/components/userPage/maps/route-details.view';
 import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
 
 const NewRoutesPanel = () => {
   const { selectedEvent, events } = useUserContext();
@@ -23,6 +24,8 @@ const NewRoutesPanel = () => {
     savedTravelPlan,
     setIsEditingTravelPlan,
     isEditingTravelPlan,
+    originValue,
+    setOriginValue,
   } = useTravelContext();
 
   const eventParticipantId = React.useMemo(() => {
@@ -36,6 +39,7 @@ const NewRoutesPanel = () => {
         eventParticipantId,
       });
       setSavedTravelPlan?.(data);
+      toast('Your travel route for this event has been saved!');
     }
   }, [eventParticipantId, flattenedSelectedRoute, setSavedTravelPlan]);
 
@@ -66,6 +70,17 @@ const NewRoutesPanel = () => {
   const handleRouteDetailsBackButton = React.useCallback(() => {
     setFlattenedSelectedRoute?.(undefined);
   }, [setFlattenedSelectedRoute]);
+
+  const handleOriginSelect = React.useCallback(
+    (place: google.maps.places.PlaceResult | null) => {
+      setSearchDirection({
+        origin: place!.place_id ?? '',
+        destination: selectedEvent?.location.googlePlaceId ?? '',
+      });
+      setOriginValue(place?.formatted_address ?? '');
+    },
+    [selectedEvent?.location.googlePlaceId, setOriginValue, setSearchDirection],
+  );
 
   React.useEffect(() => {
     handleLoadTravelRoute();
@@ -102,12 +117,9 @@ const NewRoutesPanel = () => {
         <div className={`h-20 w-full px-2 flex flex-col gap-2`}>
           <div className={`font-bold`}>Choose your origin:</div>
           <GoogleMapsAutocomplete
-            onSelect={(val) =>
-              setSearchDirection({
-                origin: val!.place_id ?? '',
-                destination: selectedEvent?.location.googlePlaceId ?? '',
-              })
-            }
+            onSelect={handleOriginSelect}
+            inputValue={originValue}
+            onInputValueChange={(value) => setOriginValue(value)}
           />
         </div>
         <RouteOptionList />

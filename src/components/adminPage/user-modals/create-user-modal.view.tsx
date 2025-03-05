@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { register } from '../../../../services/api/auth.api';
+import { toast } from 'sonner';
 
 export default function CreateUserModal({ onClose }: { onClose?(): void }) {
   const [username, setUsername] = React.useState('');
@@ -37,9 +38,9 @@ export default function CreateUserModal({ onClose }: { onClose?(): void }) {
   const handleCreate = React.useCallback(async () => {
     try {
       await register(email, email, username).then(() => onClose?.());
-      alert('Create new User successful!');
+      toast('Create new User successful!');
     } catch (err) {
-      console.log('Create failed: ' + err);
+      toast('Create failed: ' + err);
     }
   }, [email, username, onClose]);
 

@@ -6,11 +6,15 @@ import {
   useAdvancedMarkerRef,
 } from '@vis.gl/react-google-maps';
 
+interface MarkerWithInfoWindowProps {
+  position: google.maps.LatLng | google.maps.LatLngLiteral | null | undefined;
+  description?: string;
+}
+
 export const MarkerWithInfoWindow = ({
   position,
-}: {
-  position: google.maps.LatLng | google.maps.LatLngLiteral | null | undefined;
-}) => {
+  description,
+}: MarkerWithInfoWindowProps) => {
   const [infoWindowOpen, setInfoWindowOpen] = React.useState(true);
   const [markerRef, marker] = useAdvancedMarkerRef();
 
@@ -27,7 +31,7 @@ export const MarkerWithInfoWindow = ({
           maxWidth={200}
           onCloseClick={() => setInfoWindowOpen(false)}
         >
-          This supposed to be the description of the meeting location
+          {description}
         </InfoWindow>
       )}
     </>

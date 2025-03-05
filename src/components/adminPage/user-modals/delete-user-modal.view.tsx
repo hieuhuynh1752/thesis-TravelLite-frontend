@@ -15,6 +15,7 @@ import {
 import { TrashIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { deleteUser } from '../../../../services/api/user.api';
+import { toast } from 'sonner';
 
 export default function DeleteUserModal({
   userData,
@@ -26,9 +27,9 @@ export default function DeleteUserModal({
   const handleDelete = React.useCallback(async () => {
     try {
       await deleteUser(userData.id);
-      alert('Delete successful!');
+      toast('Delete successful!');
     } catch (err) {
-      console.log('Delete failed: ' + err);
+      toast('Delete failed: ' + err);
     }
   }, [userData.id]);
 
