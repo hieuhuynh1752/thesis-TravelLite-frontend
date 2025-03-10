@@ -17,10 +17,38 @@ import { getMe } from '../../../../services/api/auth.api';
 import TodayEventsVerticalStepper from '@/components/userPage/today-events-vertical-stepper.view';
 import PendingEvents from '@/components/userPage/pending-events.view';
 
+import {
+  calculateTotalCo2,
+  flattenTravelHistoryChartData,
+  flattenTravelPreferencesHistoryChartData,
+  getTravelHistoryData,
+} from '@/utils/charts-util';
+import TravelHistoryChart from '@/components/charts/travel-history-chart.view';
+import TravelPreferencesHistoryChart from '@/components/charts/travel-preference-pie-chart.view';
+
 export default function UserDashboard() {
   const { user, setUser, events, setEvents } = useUserContext();
   const [userId, setUserId] = React.useState<number | undefined>();
   const [today, setToday] = React.useState<string>('');
+
+  const travelHistoryData = React.useMemo(() => {
+    if (events) {
+      return getTravelHistoryData(events);
+    }
+    return undefined;
+  }, [events]);
+
+  const travelHistoryChartData = React.useMemo(() => {
+    if (travelHistoryData) {
+      return flattenTravelHistoryChartData(travelHistoryData);
+    }
+  }, [travelHistoryData]);
+
+  const travelPreferencesChartData = React.useMemo(() => {
+    if (travelHistoryData) {
+      return flattenTravelPreferencesHistoryChartData(travelHistoryData);
+    }
+  }, [travelHistoryData]);
 
   const handleGetUserData = React.useCallback(() => {
     if (!!userId) {
@@ -31,6 +59,7 @@ export default function UserDashboard() {
           email: value.email,
           role: value.role,
         });
+        console.log(value);
         setEvents?.(value.eventsParticipated);
       });
     }
@@ -55,6 +84,7 @@ export default function UserDashboard() {
     }
   }, [handleGetUserData]);
 
+  console.log(events);
   return (
     <SidebarProvider>
       <SidebarLeft />
@@ -78,16 +108,20 @@ export default function UserDashboard() {
           </div>
           <div className="flex flex-col gap-8">
             <div className="flex flex-1 gap-4">
-              <div className="flex h-48 w-1/2 max-w-3xl rounded-xl bg-muted/50">
-                <p className="m-auto text-center italic">
-                  {'<<' + ' Travel Metrics Graph Placeholder ' + '>>'}
-                </p>
+              <div className="flex h-fit w-1/2 max-w-3xl rounded-xl bg-muted/50">
+                <TravelHistoryChart data={travelHistoryChartData} />
               </div>
-              <Separator orientation="vertical" className="h-48" />
-              <div className="flex h-48 w-1/2 rounded-xl bg-muted/50">
-                <p className="m-auto text-center italic">
-                  {'<<' + ' CO2 Emissions Graph Placeholder ' + '>>'}
-                </p>
+              <Separator orientation="vertical" className="h-full" />
+              <div className="flex h-fit w-1/2 max-w-3xl rounded-xl bg-muted/50">
+                <TravelPreferencesHistoryChart
+                  chartData={travelPreferencesChartData}
+                  totalTravels={travelHistoryData?.length}
+                  totalCo2={
+                    travelHistoryChartData
+                      ? calculateTotalCo2(travelHistoryChartData)
+                      : undefined
+                  }
+                />
               </div>
             </div>
             <div className="flex flex-col gap-2">

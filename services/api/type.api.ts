@@ -45,6 +45,7 @@ export interface EventParticipantType {
   assignedAt: string;
   status: EventParticipantStatus;
   userId?: number;
+  travelPlan?: TravelPlanType;
 }
 
 export interface PlaceType {
@@ -58,6 +59,8 @@ export interface PlaceType {
 
 export interface TravelPlanType {
   id: number;
+  totalCo2: number;
+  travelMode: google.maps.TravelMode;
 }
 
 export interface EventType {
@@ -120,9 +123,9 @@ export function isTransitRoutes(
 ): routes is TransitRoute[] {
   return (
     routes.length > 0 &&
-    ((routes as TransitRoute[])[0].steps[0].line !== undefined ||
-      (routes as TransitRoute[])[0].steps[0].type ===
-        google.maps.TravelMode.WALKING)
+    !!(routes as TransitRoute[])[0].steps.find(
+      (step) => !!step.line || step.type === google.maps.TravelMode.WALKING,
+    )
   );
 }
 

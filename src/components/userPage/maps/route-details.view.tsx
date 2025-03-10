@@ -122,27 +122,34 @@ const RouteDetails = ({
                 {step.transit && (
                   <div className="text-sm pt-2 flex flex-col gap-2 ">
                     <Separator orientation={'horizontal'} />
-                    <p className={'pt-2 flex gap-2 items-center'}>
-                      <span
+                    <div className={'pt-2 items-center'}>
+                      <p
                         style={
                           step.transit.lineColor
                             ? {
                                 background: step.transit.lineColor,
                                 color: '#fff',
                                 fontWeight: 800,
-                                fontSize: 'small',
-                                lineHeight: 'normal',
                               }
                             : { border: '2px solid black' }
                         }
-                        className="px-1 rounded"
+                        className="px-1 rounded rounded-r-none h-full inline-block"
                       >
-                        {step.transit.vehicle === 'Bus' ? 'B' : 'M'}
-                      </span>
-                      <span>
+                        {step.transit.vehicle === 'BUS' ? 'B' : 'M'}
+                      </p>
+                      <span
+                        style={
+                          step.transit.lineColor
+                            ? {
+                                borderColor: step.transit.lineColor,
+                              }
+                            : { borderColor: 'black' }
+                        }
+                        className="px-1 rounded rounded-l-none border-2"
+                      >
                         {step.transit.lineShortName ?? step.transit.line}
                       </span>
-                    </p>
+                    </div>
                     <p>Departure at: {step.transit.departureTime}</p>
                     <p>Arrival at: {step.transit.arrivalTime}</p>
                     <span>{step.transit.numberOfStops} Stops</span>
