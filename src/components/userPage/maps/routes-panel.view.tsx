@@ -9,6 +9,7 @@ import RouteOptionList from '@/components/userPage/maps/route-option-list.view';
 import {
   createTravelPlan,
   getTravelPlanByParticipant,
+  updateTravelPlanByParticipant,
 } from '../../../../services/api/travel-plan.api';
 import RouteDetails from '@/components/userPage/maps/route-details.view';
 import { Separator } from '@/components/ui/separator';
@@ -29,28 +30,22 @@ const RoutesPanel = () => {
     originValue,
     setOriginValue,
   } = useTravelContext();
+  const directionRendererRef =
+    React.useRef<google.maps.DirectionsRenderer>(null);
 
   const eventParticipantId = React.useMemo(() => {
     return events?.find((event) => event.event === selectedEvent)?.id;
   }, [events, selectedEvent]);
 
-  const handleSaveTravelRoute = React.useCallback(async () => {
-    if (eventParticipantId && flattenedSelectedRoute) {
-      const data = await createTravelPlan({
-        ...flattenedSelectedRoute,
-        eventParticipantId,
-      });
-      setSavedTravelPlan?.(data);
-      toast('Your travel route for this event has been saved!');
-    }
-  }, [eventParticipantId, flattenedSelectedRoute, setSavedTravelPlan]);
+  const handleRouteDetailsBackButton = React.useCallback(() => {
+    setFlattenedSelectedRoute?.(undefined);
+  }, [setFlattenedSelectedRoute]);
 
   const handleLoadTravelRoute = React.useCallback(async () => {
     if (eventParticipantId) {
       try {
         const data = await getTravelPlanByParticipant(eventParticipantId);
         if (data) {
-          console.log(data);
           setSavedTravelPlan?.(data);
         } else {
           setSavedTravelPlan?.(undefined);
@@ -65,16 +60,57 @@ const RoutesPanel = () => {
   const handleUpdateEditSavedTravelPlan = React.useCallback(
     (newState: boolean) => {
       setIsEditingTravelPlan(newState);
+      if (
+        map &&
+        directionRendererRef.current &&
+        savedTravelPlan?.routeDetails &&
+        !newState
+      ) {
+        setSearchDirection(undefined);
+        setOriginValue('');
+        directionRendererRef.current = new google.maps.DirectionsRenderer({
+          map,
+          directions: savedTravelPlan.routeDetails,
+        });
+      }
+      handleRouteDetailsBackButton();
     },
-    [setIsEditingTravelPlan],
+    [
+      setIsEditingTravelPlan,
+      map,
+      savedTravelPlan?.routeDetails,
+      handleRouteDetailsBackButton,
+      setSearchDirection,
+      setOriginValue,
+    ],
   );
 
-  const handleRouteDetailsBackButton = React.useCallback(() => {
-    setFlattenedSelectedRoute?.(undefined);
-  }, [setFlattenedSelectedRoute]);
+  const handleSaveTravelRoute = React.useCallback(async () => {
+    if (eventParticipantId && flattenedSelectedRoute) {
+      const data = savedTravelPlan
+        ? await updateTravelPlanByParticipant(
+            savedTravelPlan.eventParticipantId,
+            flattenedSelectedRoute,
+          )
+        : await createTravelPlan({
+            ...flattenedSelectedRoute,
+            eventParticipantId,
+          });
+      setSavedTravelPlan?.(data);
+      handleUpdateEditSavedTravelPlan(false);
+      toast('Your travel route for this event has been saved!');
+    }
+  }, [
+    eventParticipantId,
+    flattenedSelectedRoute,
+    savedTravelPlan,
+    setSavedTravelPlan,
+    handleUpdateEditSavedTravelPlan,
+  ]);
 
   const handleOriginSelect = React.useCallback(
     (place: google.maps.places.PlaceResult | null) => {
+      directionRendererRef.current?.setMap(null);
       setSearchDirection({
         origin: place!.place_id ?? '',
         destination: selectedEvent?.location.googlePlaceId ?? '',
@@ -90,11 +126,21 @@ const RoutesPanel = () => {
 
   React.useEffect(() => {
     if (map && savedTravelPlan?.routeDetails && !isEditingEvent) {
-      new google.maps.DirectionsRenderer({
+      if (directionRendererRef.current) {
+        directionRendererRef.current.setMap(null);
+      }
+
+      directionRendererRef.current = new google.maps.DirectionsRenderer({
         map,
         directions: savedTravelPlan.routeDetails,
       });
     }
+    return () => {
+      if (directionRendererRef.current) {
+        directionRendererRef.current.setMap(null);
+        directionRendererRef.current = null;
+      }
+    };
   }, [map, savedTravelPlan, isEditingEvent]);
 
   return !savedTravelPlan || (savedTravelPlan && isEditingTravelPlan) ? (

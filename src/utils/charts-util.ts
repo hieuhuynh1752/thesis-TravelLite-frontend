@@ -36,7 +36,6 @@ export type ReducedTravelPreferencesDataType = {
 export const getTravelHistoryData = (events: EventParticipantType[]) => {
   const recursedEvents: Map<EventOccurrence, TravelHistoryDataType[]> =
     new Map();
-  console.log(events);
   let data: TravelHistoryDataType[] | undefined = events
     .filter((event) => !!event.travelPlan)
     .map((eventWithTravelPlan) => {
@@ -70,7 +69,6 @@ export const getTravelHistoryData = (events: EventParticipantType[]) => {
     for (const [key, value] of recursedEvents.entries()) {
       for (let i = 0; i < value.length; i++) {
         if (key === EventOccurrence.DAILY) {
-          console.log(value);
           for (
             let j = 1;
             j <= differenceInCalendarDays(new Date(), new Date(value[i].date!));
@@ -138,7 +136,6 @@ export const getTravelHistoryData = (events: EventParticipantType[]) => {
       };
     });
   }
-  console.log(data);
   return data;
 };
 
@@ -167,12 +164,10 @@ export const flattenTravelHistoryChartData = (
 export const flattenTravelPreferencesHistoryChartData = (
   data: TravelHistoryDataType[],
 ): ReducedTravelPreferencesDataType[] => {
-  console.log(data);
   const travelModeCounts: Record<string, number> = {};
   data.forEach(({ travelMode }) => {
     if (travelMode) {
       travelModeCounts[travelMode] = (travelModeCounts[travelMode] || 0) + 1;
-      console.log(travelMode, travelModeCounts[travelMode]);
     }
   });
   const travelModeData = Object.keys(travelModeCounts).map((mode) => ({

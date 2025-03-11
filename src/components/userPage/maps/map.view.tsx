@@ -45,12 +45,10 @@ const MapContainer: React.FC = () => {
               description={selectedEvent?.location.name}
             />
           )}
-          {searchDirection && (
-            <Directions
-              origin={searchDirection.origin}
-              destination={searchDirection.destination}
-            />
-          )}
+          <Directions
+            origin={searchDirection?.origin}
+            destination={searchDirection?.destination}
+          />
         </Map>
       </div>
     </div>

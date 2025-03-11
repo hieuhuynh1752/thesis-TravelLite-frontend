@@ -4,8 +4,8 @@ import { useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { useTravelContext } from '@/contexts/travel-context';
 
 type DirectionsProps = {
-  origin: string;
-  destination: string;
+  origin?: string;
+  destination?: string;
   travelMode?: google.maps.TravelMode;
 };
 
@@ -37,8 +37,13 @@ const Directions: React.FC<DirectionsProps> = ({ origin, destination }) => {
   }, [routesLibrary, map, origin, destination]);
 
   React.useEffect(() => {
-    if (!directionsService || !directionsRenderer || !origin || !destination)
+    if (!directionsService || !directionsRenderer || !origin || !destination) {
+      if (directionsRenderer) {
+        directionsRenderer.setMap(null);
+      }
+      setResponses([]);
       return;
+    }
 
     const fetchRoutesForAllModes = async () => {
       try {

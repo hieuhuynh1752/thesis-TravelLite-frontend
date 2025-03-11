@@ -43,7 +43,9 @@ export interface FlattenedSelectedRoute {
 
 type TravelContextType = {
   searchDirection?: DirectionType;
-  setSearchDirection: (direction: DirectionType) => void;
+  setSearchDirection: React.Dispatch<
+    React.SetStateAction<DirectionType | undefined>
+  >;
   originValue: string;
   setOriginValue: React.Dispatch<React.SetStateAction<string>>;
   responses: google.maps.DirectionsResult[];
@@ -62,10 +64,15 @@ type TravelContextType = {
   setFlattenedSelectedRoute?: React.Dispatch<
     React.SetStateAction<FlattenedSelectedRoute | undefined>
   >;
-  savedTravelPlan?: FlattenedSelectedRoute & { eventParticipantId: number };
+  savedTravelPlan?: FlattenedSelectedRoute & {
+    eventParticipantId: number;
+  };
   setSavedTravelPlan?: React.Dispatch<
     React.SetStateAction<
-      (FlattenedSelectedRoute & { eventParticipantId: number }) | undefined
+      | (FlattenedSelectedRoute & {
+          eventParticipantId: number;
+        })
+      | undefined
     >
   >;
   resetAllTravelLogs: () => void;
@@ -97,11 +104,13 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({
   >();
   const [isEditingTravelPlan, setIsEditingTravelPlan] = React.useState(false);
   const [savedTravelPlan, setSavedTravelPlan] = React.useState<
-    (FlattenedSelectedRoute & { eventParticipantId: number }) | undefined
+    | (FlattenedSelectedRoute & {
+        eventParticipantId: number;
+      })
+    | undefined
   >();
 
   const resetAllTravelLogs = React.useCallback(() => {
-    console.log('reset');
     setSelectedRoute({ index: 0 });
     setSelectedTravelMode(undefined);
     setUnavailableTravelModes(new Set<google.maps.TravelMode>());

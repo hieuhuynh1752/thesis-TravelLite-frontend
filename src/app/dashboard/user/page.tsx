@@ -59,7 +59,6 @@ export default function UserDashboard() {
           email: value.email,
           role: value.role,
         });
-        console.log(value);
         setEvents?.(value.eventsParticipated);
       });
     }
@@ -84,7 +83,6 @@ export default function UserDashboard() {
     }
   }, [handleGetUserData]);
 
-  console.log(events);
   return (
     <SidebarProvider>
       <SidebarLeft />

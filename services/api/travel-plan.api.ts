@@ -17,3 +17,13 @@ export const createTravelPlan = async (
   });
   return response.data;
 };
+
+export const updateTravelPlanByParticipant = async (
+  participantId: number,
+  data: FlattenedSelectedRoute,
+): Promise<FlattenedSelectedRoute & { eventParticipantId: number }> => {
+  const response = await api.put(`/travel-plans/participant/${participantId}`, {
+    data: data,
+  });
+  return response.data;
+};

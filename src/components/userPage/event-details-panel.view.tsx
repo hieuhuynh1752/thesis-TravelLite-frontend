@@ -93,24 +93,26 @@ function EventDetailPanel({
             : 'undefined'}
         </div>
         <div
-          className={`text-gray-700 ${eventDetailExpanded ? 'flex flex-col gap-2' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
+          className={`text-gray-700 ${eventDetailExpanded ? 'flex flex-col' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
         >
           <div className="inline-flex font-medium text-gray-500 items-baseline gap-1 px-2 border-l-4 border-gray-400 bg-gray-100 w-fit mr-2">
             <Users size={16} className="self-center" /> Participants:{' '}
           </div>
-          <div className="flex flex-wrap flex-1">
-            {selectedEvent &&
-              selectedEvent.participants
-                .filter((participant) => participant.user.id !== user?.id)
-                .map((participant, index) => (
-                  <ParticipantChip
-                    username={participant.user.name}
-                    key={index}
-                    hideClearButton
-                    status={participant.status}
-                  />
-                ))}
-          </div>
+          {selectedEvent?.participants &&
+            selectedEvent.participants.length > 0 && (
+              <div className="flex flex-wrap flex-1 mt-2">
+                {selectedEvent.participants
+                  .filter((participant) => participant.user.id !== user?.id)
+                  .map((participant, index) => (
+                    <ParticipantChip
+                      username={participant.user.name}
+                      key={index}
+                      hideClearButton
+                      status={participant.status}
+                    />
+                  ))}
+              </div>
+            )}
         </div>
         <div
           className={`text-gray-700 ${eventDetailExpanded ? '' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}

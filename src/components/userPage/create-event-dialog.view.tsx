@@ -95,7 +95,6 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
         participants &&
         user
       ) {
-        console.log(participants.map((participant) => participant.id));
         const data: CreateEventBodyType = {
           eventData: {
             title,
@@ -230,7 +229,6 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
   const handleSubmit = React.useCallback(() => {
     if (flattenEventValues) {
       if (props.asUpdate) {
-        console.log(flattenEventValues.eventData);
         updateEvent(props.asUpdate.id!, {
           eventData: {
             ...flattenEventValues.eventData,
@@ -310,7 +308,6 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
   React.useEffect(() => {
     const { asUpdate } = props;
     if (asUpdate) {
-      console.log('render');
       setTitle(asUpdate.title);
       setDescription(asUpdate.description);
       setOccurrence(asUpdate.occurrence);

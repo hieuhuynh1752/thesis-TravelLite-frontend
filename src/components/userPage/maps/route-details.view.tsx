@@ -13,7 +13,10 @@ import {
 } from 'lucide-react';
 
 interface RouteDetailsProps {
-  travelPlan: FlattenedSelectedRoute & { eventParticipantId?: number };
+  travelPlan: FlattenedSelectedRoute & {
+    eventParticipantId?: number;
+    travelPlanId?: number;
+  };
   isDetailsSaved?: boolean;
   handleUpdateEditSavedTravelPlan?: () => void;
   transitRoute?: boolean;
@@ -56,12 +59,24 @@ const RouteDetails = ({
         </div>
       )}
       <Separator orientation={'horizontal'} />
-      <div className={'flex gap-2 px-2'}>
-        <span className={'text-gray-600 italic w-10 shrink-0'}>from </span>{' '}
+      <div className={'flex gap-2 pr-2'}>
+        <span
+          className={
+            'font-medium text-gray-500 items-baseline gap-1 px-2 border-l-4 border-gray-400 bg-gray-100 w-14 mr-2 h-fit shrink-0'
+          }
+        >
+          From{' '}
+        </span>{' '}
         <span className={'font-semibold'}>{travelPlan.origin}</span>
       </div>
-      <div className={`flex gap-2 px-2`}>
-        <span className={'text-gray-600 italic w-10 shrink-0'}>to </span>{' '}
+      <div className={`flex gap-2 pr-2`}>
+        <span
+          className={
+            'font-medium text-gray-500 items-baseline gap-1 px-2 border-l-4 border-gray-400 bg-gray-100 w-14 mr-2 h-fit shrink-0'
+          }
+        >
+          To{' '}
+        </span>{' '}
         <span className={'font-semibold'}>{travelPlan.destination}</span>
       </div>
       <Separator orientation={'horizontal'} />
@@ -166,7 +181,9 @@ const RouteDetails = ({
       </ol>
       {!isDetailsSaved && (
         <div className={`flex gap-4 px-2 justify-end`}>
-          <Button variant={'secondary'}>Cancel</Button>
+          <Button onClick={() => handleBackButton?.()} variant={'secondary'}>
+            Cancel
+          </Button>
           <Button onClick={() => handleSaveTravelRoute?.()}>
             <Save />
             Save

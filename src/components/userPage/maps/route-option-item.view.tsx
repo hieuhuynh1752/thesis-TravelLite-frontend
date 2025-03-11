@@ -120,7 +120,6 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
             travelMode: step.travel_mode,
           };
           if (step.transit) {
-            console.log(step, step.transit);
             stepInfo.transit = {
               line: step.transit.line.name,
               lineShortName: step.transit.line.short_name,
@@ -137,10 +136,6 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
 
           return stepInfo;
         });
-        console.log(routes);
-        console.log(
-          isTransitRoutes(routes) ? routes[index].totalCo2 : routes[index].co2,
-        );
         setFlattenedSelectedRoute?.({
           origin: leg.start_address,
           destination: leg.end_address,
@@ -204,7 +199,6 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
         };
       }),
     );
-    console.log(data);
     setRoutes(data);
   }, [setRoutes, parsedTransitRoutes, handleCalculateCO2]);
 
@@ -285,8 +279,6 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
       }
     });
   };
-
-  console.log(routes, isTransitRoutes(routes));
 
   if (!TravelMode) {
     return null;
