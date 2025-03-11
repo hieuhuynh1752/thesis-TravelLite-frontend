@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   BusFront,
   Footprints,
+  Leaf,
   Save,
   TrainFront,
 } from 'lucide-react';
@@ -35,6 +36,7 @@ const RouteDetails = ({
           <Button
             onClick={() => handleUpdateEditSavedTravelPlan?.()}
             variant={'secondary'}
+            className={'py-0 h-8'}
           >
             Edit
           </Button>
@@ -77,10 +79,12 @@ const RouteDetails = ({
           </p>
         </div>
         <div
-          className={'flex flex-col bg-green-200 rounded-md px-2 text-right'}
+          className={
+            'flex flex-col bg-green-200 rounded-md px-4 text-right min-w-fit h-fit'
+          }
         >
           <p className={'text-lg text-green-800 font-semibold'}>
-            {travelPlan.totalCo2} kg
+            {travelPlan.totalCo2} kg <Leaf size={16} className={'inline'} />
           </p>
           <p className={''}>est. CO2e</p>
         </div>

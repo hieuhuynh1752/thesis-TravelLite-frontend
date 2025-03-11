@@ -24,13 +24,6 @@ const Directions: React.FC<DirectionsProps> = ({ origin, destination }) => {
     setSelectedRoute,
     setUnavailableTravelModes,
   } = useTravelContext();
-  // const [routes, setRoutes] = React.useState<google.maps.DirectionsRoute[]>([]);
-  // const [responses, setResponses] = React.useState<
-  //   google.maps.DirectionsResult[]
-  // >([]);
-  // const [routeIndex, setRouteIndex] = useState(0);
-  // const selected = routes[routeIndex];
-  // const leg = selectedRoute.routes[selectedRoute.index]?.route.legs[0];
 
   const travelModes = React.useMemo<google.maps.TravelMode[]>(
     () => Object.values(google.maps.TravelMode),

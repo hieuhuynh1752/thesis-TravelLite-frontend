@@ -184,10 +184,10 @@ export const flattenTravelPreferencesHistoryChartData = (
 
 export const calculateTotalCo2 = (
   data: ReducedTravelHistoryDataType[],
-): number => {
+): string => {
   let counter = 0;
   for (const item of data) {
     counter += item.totalCo2!;
   }
-  return counter;
+  return counter.toFixed(2);
 };

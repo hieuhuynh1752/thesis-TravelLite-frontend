@@ -1,72 +1,155 @@
 'use client';
-
-import React from 'react';
-import { useTravelContext } from '@/contexts/travel-context';
-import RouteOptionList from './route-option-list.view';
-import { Circle, MapPin, Search } from 'lucide-react';
+import * as React from 'react';
+import GoogleMapsAutocomplete from '@/components/userPage/maps/places-autocomplete.view';
+import { useUserContext } from '@/contexts/user-context';
+import { ArrowLeft, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTravelContext } from '@/contexts/travel-context';
+import RouteOptionList from '@/components/userPage/maps/route-option-list.view';
+import {
+  createTravelPlan,
+  getTravelPlanByParticipant,
+} from '../../../../services/api/travel-plan.api';
+import RouteDetails from '@/components/userPage/maps/route-details.view';
+import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
+import { useMap } from '@vis.gl/react-google-maps';
 
-export const RoutesPanel: React.FC = () => {
-  const { setSearchDirection, responses } = useTravelContext();
-  const [origin, setOrigin] = React.useState<string>('');
-  const [destination, setDestination] = React.useState<string>('');
+const RoutesPanel = () => {
+  const map = useMap();
+  const { selectedEvent, events, isEditingEvent } = useUserContext();
+  const {
+    setSearchDirection,
+    flattenedSelectedRoute,
+    setFlattenedSelectedRoute,
+    setSavedTravelPlan,
+    savedTravelPlan,
+    setIsEditingTravelPlan,
+    isEditingTravelPlan,
+    originValue,
+    setOriginValue,
+  } = useTravelContext();
 
-  console.log(responses);
-  return (
-    <div className="">
-      <div className="flex flex-row gap-4">
-        <div className="flex flex-col space-y-2 grow">
-          {/* Starting Point Input */}
-          <div className="flex items-center border rounded-lg shadow-sm p-2">
-            <div className="text-gray-500 text-center px-2">
-              <Circle size={16} />
+  const eventParticipantId = React.useMemo(() => {
+    return events?.find((event) => event.event === selectedEvent)?.id;
+  }, [events, selectedEvent]);
+
+  const handleSaveTravelRoute = React.useCallback(async () => {
+    if (eventParticipantId && flattenedSelectedRoute) {
+      const data = await createTravelPlan({
+        ...flattenedSelectedRoute,
+        eventParticipantId,
+      });
+      setSavedTravelPlan?.(data);
+      toast('Your travel route for this event has been saved!');
+    }
+  }, [eventParticipantId, flattenedSelectedRoute, setSavedTravelPlan]);
+
+  const handleLoadTravelRoute = React.useCallback(async () => {
+    if (eventParticipantId) {
+      try {
+        const data = await getTravelPlanByParticipant(eventParticipantId);
+        if (data) {
+          console.log(data);
+          setSavedTravelPlan?.(data);
+        } else {
+          setSavedTravelPlan?.(undefined);
+        }
+      } catch (error) {
+        console.log(error);
+        setSavedTravelPlan?.(undefined);
+      }
+    }
+  }, [eventParticipantId, setSavedTravelPlan]);
+
+  const handleUpdateEditSavedTravelPlan = React.useCallback(
+    (newState: boolean) => {
+      setIsEditingTravelPlan(newState);
+    },
+    [setIsEditingTravelPlan],
+  );
+
+  const handleRouteDetailsBackButton = React.useCallback(() => {
+    setFlattenedSelectedRoute?.(undefined);
+  }, [setFlattenedSelectedRoute]);
+
+  const handleOriginSelect = React.useCallback(
+    (place: google.maps.places.PlaceResult | null) => {
+      setSearchDirection({
+        origin: place!.place_id ?? '',
+        destination: selectedEvent?.location.googlePlaceId ?? '',
+      });
+      setOriginValue(place?.formatted_address ?? '');
+    },
+    [selectedEvent?.location.googlePlaceId, setOriginValue, setSearchDirection],
+  );
+
+  React.useEffect(() => {
+    handleLoadTravelRoute();
+  }, [handleLoadTravelRoute]);
+
+  React.useEffect(() => {
+    if (map && savedTravelPlan?.routeDetails && !isEditingEvent) {
+      new google.maps.DirectionsRenderer({
+        map,
+        directions: savedTravelPlan.routeDetails,
+      });
+    }
+  }, [map, savedTravelPlan, isEditingEvent]);
+
+  return !savedTravelPlan || (savedTravelPlan && isEditingTravelPlan) ? (
+    flattenedSelectedRoute ? (
+      <RouteDetails
+        travelPlan={flattenedSelectedRoute}
+        handleBackButton={handleRouteDetailsBackButton}
+        handleSaveTravelRoute={handleSaveTravelRoute}
+      />
+    ) : (
+      <div className="flex flex-grow flex-col gap-2">
+        {savedTravelPlan && isEditingTravelPlan && (
+          <div className={'flex flex-col gap-2'}>
+            <div className={`flex gap-2 px-2`}>
+              <Button
+                onClick={() => handleUpdateEditSavedTravelPlan(false)}
+                variant={'ghost'}
+                className={'px-2 py-0 border-2 border-gray-500 h-7 w-12'}
+              >
+                <ArrowLeft />
+              </Button>
+              <div className={'text-xl font-bold text-gray-600 self-center'}>
+                Update your travel plan
+              </div>
             </div>
-            <input
-              type="text"
-              placeholder="Choose starting point, or click on the map"
-              className="flex-1 outline-none border-none placeholder-gray-500"
-              value={origin}
-              onChange={(e) => setOrigin(e.target.value)}
-            />
+            <Separator orientation={'horizontal'} />
           </div>
-
-          {/* Destination Input */}
-          <div className="flex items-center border rounded-lg shadow-sm p-2 gap-1">
-            <div className="text-gray-500 px-2 text-center">
-              <MapPin size={16} />
-            </div>
-            <input
-              type="text"
-              placeholder="Choose destination..."
-              className="flex-1 outline-none border-none placeholder-gray-500"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-            />
-          </div>
+        )}
+        <div className={`h-20 w-full px-2 flex flex-col gap-2`}>
+          <div className={`font-bold`}>Choose your origin:</div>
+          <GoogleMapsAutocomplete
+            onSelect={handleOriginSelect}
+            inputValue={originValue}
+            onInputValueChange={(value) => setOriginValue(value)}
+          />
         </div>
-        <div className="flex justify-center">
-          <Button
-            className=" w-8 h-8 self-center rounded justify-items-center"
-            onClick={() => {
-              if (!origin || !destination) {
-                alert('Please enter both origin and destination.');
-                return;
-              } else {
-                setSearchDirection({ origin, destination });
-              }
-            }}
-          >
-            <Search size={16} />
-          </Button>
+        <RouteOptionList />
+        <div
+          className={`h-12 bg-gray-200 text-gray-700 p-2 inline-flex items-center text-md gap-1`}
+        >
+          <MapPin size={16} className="self-center" />
+          <span className={`italic`}>Destination:</span>{' '}
+          <span className={`font-bold`}>{selectedEvent?.location.name}</span>
         </div>
       </div>
-
-      <RouteOptionList />
-
-      {/* Footer Section */}
-      <div className="p-4 border-t text-sm text-gray-500">
-        <p>Delays: Moderate traffic in this area</p>
-      </div>
-    </div>
+    )
+  ) : (
+    <RouteDetails
+      travelPlan={savedTravelPlan}
+      handleUpdateEditSavedTravelPlan={() =>
+        handleUpdateEditSavedTravelPlan(true)
+      }
+      isDetailsSaved={true}
+    />
   );
 };
+
+export default RoutesPanel;

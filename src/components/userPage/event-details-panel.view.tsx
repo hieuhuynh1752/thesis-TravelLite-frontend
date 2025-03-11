@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import ParticipantChip from '@/components/ui/chip';
+import CreateOrUpdateEventDialog from '@/components/userPage/create-event-dialog.view';
 
 interface EventDetailPanelProps {
   isRoutesPanelVisible: boolean;
@@ -38,10 +39,40 @@ function EventDetailPanel({
       <div
         className={`${eventDetailExpanded ? 'h-full' : 'h-32'} relative flex flex-col gap-2 transition-all duration-500 ease-in-out overflow-hidden`}
       >
-        <div className="font-bold text-2xl">{selectedEvent?.title}</div>
+        <div className={'flex justify-between items-center'}>
+          <div className="font-bold text-2xl">{selectedEvent?.title}</div>
+          <CreateOrUpdateEventDialog
+            asUpdate={
+              selectedEvent
+                ? {
+                    id: selectedEvent.id,
+                    title: selectedEvent.title,
+                    description: selectedEvent.description,
+                    occurrence: selectedEvent.occurrence,
+                    locationId: selectedEvent.location.id,
+                    selectedPlace: {
+                      name: selectedEvent.location.name,
+                      place_id: selectedEvent.location.googlePlaceId,
+                      geometry: {
+                        location: new google.maps.LatLng(
+                          selectedEvent.location.latitude,
+                          selectedEvent.location.longtitude,
+                        ),
+                      } as google.maps.places.PlaceGeometry,
+                      formatted_address: selectedEvent.location.address,
+                    } as google.maps.places.PlaceResult,
+                    participants: selectedEvent.participants
+                      .filter((participant) => participant.user.id !== user?.id)
+                      .map((participant) => participant.user),
+                    dateTime: selectedEvent.dateTime,
+                  }
+                : undefined
+            }
+          />
+        </div>
         <Separator orientation={'horizontal'} />
         <div className={`text-gray-700`}>
-          <div className="inline-flex items-baseline gap-1 pr-2 italic text-gray-500">
+          <div className="inline-flex text-gray-500 font-medium items-baseline gap-1 px-2 border-l-4 border-gray-400 bg-gray-100 mr-2">
             <Clock size={16} className="self-center" />
             {'At: '}
           </div>
@@ -52,7 +83,7 @@ function EventDetailPanel({
         <div
           className={`text-gray-700 ${eventDetailExpanded ? '' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
         >
-          <div className="inline-flex italic text-gray-500 items-baseline gap-1 pr-2">
+          <div className="inline-flex text-gray-500 font-medium items-baseline gap-1 px-2 border-l-4 border-gray-400 bg-gray-100 mr-2">
             <UserCog size={16} className="self-center" /> Host:{' '}
           </div>
           {selectedEvent && user?.name
@@ -64,7 +95,7 @@ function EventDetailPanel({
         <div
           className={`text-gray-700 ${eventDetailExpanded ? 'flex flex-col gap-2' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
         >
-          <div className="inline-flex italic font-semibold text-gray-500 items-baseline gap-1 pr-2">
+          <div className="inline-flex font-medium text-gray-500 items-baseline gap-1 px-2 border-l-4 border-gray-400 bg-gray-100 w-fit mr-2">
             <Users size={16} className="self-center" /> Participants:{' '}
           </div>
           <div className="flex flex-wrap flex-1">
@@ -84,7 +115,7 @@ function EventDetailPanel({
         <div
           className={`text-gray-700 ${eventDetailExpanded ? '' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
         >
-          <div className="inline-flex italic items-baseline gap-1 pr-2 text-gray-500">
+          <div className="inline-flex text-gray-500 font-medium items-baseline gap-1 px-2 border-l-4 border-gray-400 bg-gray-100 mr-2">
             <ScanText size={16} className="self-center" /> Description:
           </div>
           {selectedEvent?.description}
@@ -120,14 +151,16 @@ function EventDetailPanel({
           <Button
             onClick={() => toggleRoutesPanel()}
             variant={'ghost'}
-            className="border-gray-500 border-2 p-2 py-1 mr-1"
+            className="border-gray-400 border p-2 py-1 mr-1"
           >
             {isRoutesPanelVisible ? (
               <ChevronsRight size={8} />
             ) : (
               <ChevronsLeft size={8} />
             )}
-            {isRoutesPanelVisible ? 'Hide route details' : 'Show route details'}
+            {isRoutesPanelVisible
+              ? 'Hide Travel Planning'
+              : 'Show Travel Planning'}
           </Button>
         </div>
         <div

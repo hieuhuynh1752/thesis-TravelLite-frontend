@@ -6,6 +6,7 @@ import {
   EventType,
   UserType,
 } from '../../services/api/type.api';
+import { Dispatch } from 'react';
 
 type UserContextType = {
   user?: UserType;
@@ -14,6 +15,8 @@ type UserContextType = {
   setUser?: (userInfo: UserType) => void;
   setEvents?: (events: EventParticipantType[]) => void;
   setSelectedEvent?: (event?: EventType) => void;
+  isEditingEvent?: boolean;
+  setIsEditingEvent?: Dispatch<React.SetStateAction<boolean>>;
 };
 
 const UserContext = React.createContext<UserContextType | undefined>(undefined);
@@ -28,6 +31,7 @@ export const UserContextProvider: React.FC<{ children: React.ReactNode }> = ({
   const [selectedEvent, setSelectedEvent] = React.useState<
     EventType | undefined
   >();
+  const [isEditingEvent, setIsEditingEvent] = React.useState(false);
 
   return (
     <UserContext.Provider
@@ -38,6 +42,8 @@ export const UserContextProvider: React.FC<{ children: React.ReactNode }> = ({
         setEvents,
         selectedEvent,
         setSelectedEvent,
+        isEditingEvent,
+        setIsEditingEvent,
       }}
     >
       {children}

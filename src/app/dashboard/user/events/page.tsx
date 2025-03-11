@@ -17,8 +17,8 @@ import { TravelProvider } from '@/contexts/travel-context';
 import MapContainer from '@/components/userPage/maps/map.view';
 import EventsListPanel from '@/components/userPage/events-list-panel.view';
 import EventDetailPanel from '@/components/userPage/event-details-panel.view';
-import NewRoutesPanel from '@/components/userPage/maps/new-routes-panel.view';
-import CreateEventDialog from '@/components/userPage/create-event-dialog.view';
+import RoutesPanel from '@/components/userPage/maps/routes-panel.view';
+import CreateOrUpdateEventDialog from '@/components/userPage/create-event-dialog.view';
 
 export default function UserEvents() {
   const [googleMaps, setGoogleMaps] = React.useState<
@@ -46,7 +46,10 @@ export default function UserEvents() {
   }, []);
 
   return (
-    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
+    <APIProvider
+      apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}
+      libraries={['marker']}
+    >
       <GoogleMapsContext.Provider value={googleMaps}>
         <SidebarProvider>
           <SidebarLeft />
@@ -61,7 +64,7 @@ export default function UserEvents() {
                   </div>
                 </div>
                 <div className="pr-4">
-                  <CreateEventDialog />
+                  <CreateOrUpdateEventDialog />
                 </div>
               </div>
             </header>
@@ -84,7 +87,7 @@ export default function UserEvents() {
                   <div
                     className={`${showRoutePanel ? 'w-[27vw] border-l-2' : 'w-0 border-0'} h-[calc(100vh-4rem)] flex border-muted transition-all duration-300 ease-in-out`}
                   >
-                    {showRoutePanel && <NewRoutesPanel />}
+                    {showRoutePanel && <RoutesPanel />}
                   </div>
                 </TravelProvider>
               ) : (

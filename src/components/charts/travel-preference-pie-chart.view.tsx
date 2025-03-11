@@ -10,7 +10,7 @@ import { Leaf } from 'lucide-react';
 export interface TravelPreferencesChartProps {
   chartData?: ReducedTravelPreferencesDataType[];
   totalTravels?: number;
-  totalCo2?: number;
+  totalCo2?: string;
 }
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff6b6b', '#6b5b95'];

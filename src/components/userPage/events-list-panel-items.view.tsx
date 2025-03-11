@@ -31,24 +31,36 @@ const EventsListPanelItems = () => {
     (showAll?: boolean) => {
       if (events) {
         const participatedEvents = events.map((p) => p.event);
-        const filteredEvents = showAll
-          ? participatedEvents
-          : participatedEvents.filter(
-              (event) =>
-                isToday(event.dateTime) ||
-                isFuture(event.dateTime) ||
-                event.occurrence === EventOccurrence.DAILY,
-            );
-        const sortedEvents = filteredEvents.sort(
+        const filteredEvents = participatedEvents.filter(
+          (event) =>
+            isToday(event.dateTime) ||
+            isFuture(event.dateTime) ||
+            event.occurrence === EventOccurrence.DAILY,
+        );
+        let sortedEvents = filteredEvents.sort(
           (a, b) =>
             new Date(
               a.occurrence === EventOccurrence.DAILY ? '' : a.dateTime,
             ).getTime() -
             new Date(
-              a.occurrence === EventOccurrence.DAILY ? '' : b.dateTime,
+              b.occurrence === EventOccurrence.DAILY ? '' : b.dateTime,
             ).getTime(),
         );
-        console.log(sortedEvents);
+
+        const sortedPastEvents = participatedEvents
+          .filter(
+            (event) =>
+              isPast(event.dateTime) &&
+              event.occurrence !== EventOccurrence.DAILY,
+          )
+          .sort(
+            (a, b) =>
+              new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
+          );
+
+        if (showAll) {
+          sortedEvents = sortedPastEvents.concat(sortedEvents);
+        }
         const upcomingEventsMap = new Map<string, EventType[]>();
         for (const event of sortedEvents) {
           let dayObject = new Date(
@@ -61,7 +73,6 @@ const EventsListPanelItems = () => {
             0,
           );
           const dayString = dayObject.toISOString();
-          console.log(dayString);
           if (upcomingEventsMap.has(dayString)) {
             const newList = upcomingEventsMap.get(dayString);
             newList!.push(event);
@@ -88,8 +99,8 @@ const EventsListPanelItems = () => {
   const handleSelectEvent = React.useCallback(
     (newSelectedEvent: EventType) => {
       if (newSelectedEvent !== selectedEvent) {
-        setSelectedEvent?.(newSelectedEvent);
         resetAllTravelLogs();
+        setSelectedEvent?.(newSelectedEvent);
       }
     },
     [resetAllTravelLogs, setSelectedEvent, selectedEvent],

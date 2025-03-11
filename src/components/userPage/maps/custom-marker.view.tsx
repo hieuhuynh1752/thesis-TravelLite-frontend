@@ -1,10 +1,6 @@
 'use client';
 import * as React from 'react';
-import {
-  AdvancedMarker,
-  InfoWindow,
-  useAdvancedMarkerRef,
-} from '@vis.gl/react-google-maps';
+import { Marker, InfoWindow, useMarkerRef } from '@vis.gl/react-google-maps';
 
 interface MarkerWithInfoWindowProps {
   position: google.maps.LatLng | google.maps.LatLngLiteral | null | undefined;
@@ -16,11 +12,11 @@ export const MarkerWithInfoWindow = ({
   description,
 }: MarkerWithInfoWindowProps) => {
   const [infoWindowOpen, setInfoWindowOpen] = React.useState(true);
-  const [markerRef, marker] = useAdvancedMarkerRef();
+  const [markerRef, marker] = useMarkerRef();
 
   return (
     <>
-      <AdvancedMarker
+      <Marker
         ref={markerRef}
         onClick={() => setInfoWindowOpen(true)}
         position={position}

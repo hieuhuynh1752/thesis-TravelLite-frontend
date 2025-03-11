@@ -8,30 +8,38 @@ import { useUserContext } from '@/contexts/user-context';
 import { MarkerWithInfoWindow } from '@/components/userPage/maps/custom-marker.view';
 
 const MapContainer: React.FC = () => {
-  const { searchDirection } = useTravelContext();
+  const { searchDirection, savedTravelPlan } = useTravelContext();
   const { selectedEvent } = useUserContext();
 
   const location = React.useMemo(() => {
-    if (!searchDirection && selectedEvent && selectedEvent.location) {
+    if (
+      !searchDirection &&
+      selectedEvent &&
+      selectedEvent.location &&
+      !savedTravelPlan
+    ) {
       return {
         lat: selectedEvent?.location.latitude,
         lng: selectedEvent?.location.longtitude,
       };
     }
-  }, [selectedEvent, searchDirection]);
+  }, [selectedEvent, searchDirection, savedTravelPlan]);
 
   return (
     <div className="flex flex-col items-center">
       {/* Input fields for origin and destination */}
       <div style={{ width: '100%', height: '40vh' }}>
         <Map
-          defaultCenter={{ lat: 52.377956, lng: 4.89707 }}
+          defaultCenter={{
+            lat: location?.lat ?? 52.377956,
+            lng: location?.lng ?? 4.89707,
+          }}
           defaultZoom={12}
           gestureHandling={'greedy'}
-          center={location}
           mapId={'bf51a910020fa25a'}
+          disableDefaultUI
         >
-          {location && (
+          {location && !searchDirection && (
             <MarkerWithInfoWindow
               position={location}
               description={selectedEvent?.location.name}
