@@ -10,6 +10,7 @@ import {
   Leaf,
   Save,
   TrainFront,
+  TramFront,
 } from 'lucide-react';
 
 interface RouteDetailsProps {
@@ -126,6 +127,8 @@ const RouteDetails = ({
                   step.transit ? (
                     step.transit.vehicle === 'BUS' ? (
                       <BusFront />
+                    ) : step.transit.vehicle === 'TRAM' ? (
+                      <TramFront />
                     ) : (
                       <TrainFront />
                     )
@@ -154,7 +157,11 @@ const RouteDetails = ({
                         }
                         className="px-1 rounded rounded-r-none h-full inline-block"
                       >
-                        {step.transit.vehicle === 'BUS' ? 'B' : 'M'}
+                        {step.transit.vehicle === 'BUS'
+                          ? 'B'
+                          : step.transit.vehicle === 'TRAM'
+                            ? 'T'
+                            : 'M'}
                       </p>
                       <span
                         style={

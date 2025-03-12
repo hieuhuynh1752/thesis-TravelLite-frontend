@@ -17,6 +17,7 @@ import {
   Footprints,
   Leaf,
   TrainFront,
+  TramFront,
 } from 'lucide-react';
 import { useGoogleMaps } from '@/contexts/google-maps-context';
 
@@ -340,6 +341,8 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
                           <div className="flex text-gray-500 leading-none w-4 justify-center p-1">
                             {step.vehicle === 'Bus' ? (
                               <BusFront size={18} />
+                            ) : step.vehicle === 'Tram' ? (
+                              <TramFront size={18} />
                             ) : (
                               <TrainFront size={18} />
                             )}

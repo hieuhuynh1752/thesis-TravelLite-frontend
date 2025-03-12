@@ -28,7 +28,7 @@ const TravelHistoryChart = ({ data }: TravelHistoryChartProps) => {
         <ResponsiveContainer width="100%" height={250}>
           <LineChart
             data={data}
-            margin={{ top: 40, right: 30, left: -20, bottom: 20 }}
+            margin={{ top: 40, right: 30, left: 0, bottom: 20 }}
           >
             <XAxis dataKey="date" stroke="#8884d8" tickMargin={12} />
             <YAxis

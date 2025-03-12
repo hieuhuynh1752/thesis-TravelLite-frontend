@@ -13,6 +13,7 @@ import {
   differenceInCalendarYears,
   format,
   parseISO,
+  isPast,
 } from 'date-fns';
 
 export type TravelHistoryDataType = {
@@ -37,7 +38,7 @@ export const getTravelHistoryData = (events: EventParticipantType[]) => {
   const recursedEvents: Map<EventOccurrence, TravelHistoryDataType[]> =
     new Map();
   let data: TravelHistoryDataType[] | undefined = events
-    .filter((event) => !!event.travelPlan)
+    .filter((event) => !!event.travelPlan && isPast(event.event.dateTime))
     .map((eventWithTravelPlan) => {
       const dataToRender: TravelHistoryDataType = {
         co2: eventWithTravelPlan.travelPlan?.totalCo2,
