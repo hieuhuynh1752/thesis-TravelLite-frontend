@@ -54,23 +54,23 @@ export default function UserEvents() {
         <SidebarProvider>
           <SidebarLeft />
           <SidebarInset>
-            <header className="sticky top-0 flex h-14 border-b-2 border-gray-200 shrink-0 items-center gap-2 bg-background">
-              <div className="flex justify-between w-full">
-                <div className="flex flex-1 items-center gap-2 px-3">
-                  <SidebarTrigger />
-                  <Separator orientation="vertical" className="mr-2 h-4" />
-                  <div className="p-2 bg-gray-100 rounded-md">
-                    <a>Events</a>
+            {googleMaps ? (
+              <TravelProvider>
+                <header className="sticky top-0 flex h-14 border-b-2 border-gray-200 shrink-0 items-center gap-2 bg-background">
+                  <div className="flex justify-between w-full">
+                    <div className="flex flex-1 items-center gap-2 px-3">
+                      <SidebarTrigger />
+                      <Separator orientation="vertical" className="mr-2 h-4" />
+                      <div className="p-2 bg-gray-100 rounded-md">
+                        <a>Events</a>
+                      </div>
+                    </div>
+                    <div className="pr-4">
+                      <CreateOrUpdateEventDialog />
+                    </div>
                   </div>
-                </div>
-                <div className="pr-4">
-                  <CreateOrUpdateEventDialog />
-                </div>
-              </div>
-            </header>
-            <div className="flex flex-1 gap-2 pt-2">
-              {googleMaps ? (
-                <TravelProvider>
+                </header>
+                <div className="flex flex-1 gap-2 pt-2">
                   <div className={`flex flex-1 flex-col`}>
                     <div className="h-fit">
                       <MapContainer />
@@ -89,15 +89,28 @@ export default function UserEvents() {
                   >
                     {showRoutePanel && <RoutesPanel />}
                   </div>
-                </TravelProvider>
-              ) : (
-                <>
+                </div>
+              </TravelProvider>
+            ) : (
+              <>
+                <header className="sticky top-0 flex h-14 border-b-2 border-gray-200 shrink-0 items-center gap-2 bg-background">
+                  <div className="flex justify-between w-full">
+                    <div className="flex flex-1 items-center gap-2 px-3">
+                      <SidebarTrigger />
+                      <Separator orientation="vertical" className="mr-2 h-4" />
+                      <div className="p-2 bg-gray-100 rounded-md">
+                        <a>Events</a>
+                      </div>
+                    </div>
+                  </div>
+                </header>
+                <div className="flex flex-1 gap-2 pt-2">
                   <div className="ml-4 h-full w-[30vw] max-w-3xl rounded-xl bg-muted/50" />
                   <Separator orientation="vertical" />
                   <div className="h-full w-full rounded-xl bg-muted/50" />
-                </>
-              )}
-            </div>
+                </div>
+              </>
+            )}
           </SidebarInset>
         </SidebarProvider>
       </GoogleMapsContext.Provider>
