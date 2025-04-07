@@ -19,6 +19,9 @@ import EventsListPanel from '@/components/userPage/events-list-panel.view';
 import EventDetailPanel from '@/components/userPage/event-details-panel.view';
 import RoutesPanel from '@/components/userPage/maps/routes-panel.view';
 import CreateOrUpdateEventDialog from '@/components/userPage/create-event-dialog.view';
+import Image from 'next/image';
+import logo_travellite from '@/img/logo_travellite.png';
+import { ChevronRight } from 'lucide-react';
 
 export default function UserEvents() {
   const [googleMaps, setGoogleMaps] = React.useState<
@@ -61,8 +64,16 @@ export default function UserEvents() {
                     <div className="flex flex-1 items-center gap-2 px-3">
                       <SidebarTrigger />
                       <Separator orientation="vertical" className="mr-2 h-4" />
-                      <div className="p-2 bg-gray-100 rounded-md">
-                        <a>Events</a>
+                      <Image
+                        src={logo_travellite}
+                        alt="Image"
+                        className=" h-fit w-28 md:p-10 dark:brightness-[0.2] dark:grayscale"
+                        width={192}
+                        style={{ padding: 0 }}
+                      />
+                      <div className={'flex gap-2 items-center'}>
+                        <ChevronRight size={16} />
+                        <a>Events </a>
                       </div>
                     </div>
                     <div className="pr-4">
@@ -98,8 +109,16 @@ export default function UserEvents() {
                     <div className="flex flex-1 items-center gap-2 px-3">
                       <SidebarTrigger />
                       <Separator orientation="vertical" className="mr-2 h-4" />
-                      <div className="p-2 bg-gray-100 rounded-md">
-                        <a>Events</a>
+                      <Image
+                        src={logo_travellite}
+                        alt="Image"
+                        className=" h-fit w-28 md:p-10 dark:brightness-[0.2] dark:grayscale"
+                        width={192}
+                        style={{ padding: 0 }}
+                      />
+                      <div className={'flex gap-2 items-center'}>
+                        <ChevronRight size={16} />
+                        <a>Events </a>
                       </div>
                     </div>
                   </div>

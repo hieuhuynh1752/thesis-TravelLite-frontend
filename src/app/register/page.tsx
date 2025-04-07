@@ -1,11 +1,10 @@
 import { GalleryVerticalEnd } from 'lucide-react';
 
-import { LoginForm } from '@/components/login-form';
 import Image from 'next/image';
-import login_landing from '../../img/login_landing.svg';
-import logo_travellite from '../../img/logo_travellite.png';
+import register_landing from '../../img/register_landing.svg';
+import { RegisterForm } from '@/components/register-form';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
@@ -14,25 +13,18 @@ export default function LoginPage() {
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <GalleryVerticalEnd className="size-4" />
             </div>
-
-            <Image
-              src={logo_travellite}
-              alt="Image"
-              className=" h-fit w-28 md:p-10 dark:brightness-[0.2] dark:grayscale"
-              width={192}
-              style={{ padding: 0 }}
-            />
+            TravelLite Inc.
           </a>
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
-            <LoginForm />
+            <RegisterForm />
           </div>
         </div>
       </div>
       <div className="relative hidden bg-muted lg:block">
         <Image
-          src={login_landing}
+          src={register_landing}
           alt="Image"
           className="absolute inset-0 h-full w-full p-6 md:p-10 dark:brightness-[0.2] dark:grayscale"
           fill

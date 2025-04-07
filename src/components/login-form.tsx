@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import * as React from 'react';
-import { register, login } from '../../services/api/auth.api';
+import { login } from '../../services/api/auth.api';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/user-context';
 import { toast } from 'sonner';
@@ -18,15 +18,6 @@ export function LoginForm({
   const [password, setPassword] = React.useState('');
   const router = useRouter();
   const { setUser } = useUserContext();
-
-  const handleRegister = React.useCallback(async () => {
-    try {
-      await register(email, password);
-      toast('Registration successful!');
-    } catch (err) {
-      toast('Registration failed: ' + err);
-    }
-  }, [email, password]);
 
   const handleLogin = React.useCallback(async () => {
     try {
@@ -81,7 +72,12 @@ export function LoginForm({
             onChange={(event) => setPassword(event.target.value)}
           />
         </div>
-        <Button type="button" className="w-full" onClick={handleLogin}>
+        <Button
+          type="button"
+          className="w-full"
+          onClick={handleLogin}
+          disabled={email === '' || password === ''}
+        >
           Login
         </Button>
         <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
@@ -93,7 +89,7 @@ export function LoginForm({
           variant="outline"
           className="w-full"
           type="button"
-          onClick={handleRegister}
+          onClick={() => router.push('/register')}
         >
           Register
         </Button>

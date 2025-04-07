@@ -25,6 +25,9 @@ import {
 } from '@/utils/charts-util';
 import TravelHistoryChart from '@/components/charts/travel-history-chart.view';
 import TravelPreferencesHistoryChart from '@/components/charts/travel-preference-pie-chart.view';
+import logo_travellite from '@/img/logo_travellite.png';
+import Image from 'next/image';
+import { ChevronRight } from 'lucide-react';
 
 export default function UserDashboard() {
   const { user, setUser, events, setEvents } = useUserContext();
@@ -91,7 +94,15 @@ export default function UserDashboard() {
           <div className="flex flex-1 items-center gap-2 px-3">
             <SidebarTrigger />
             <Separator orientation="vertical" className="mr-2 h-4" />
-            <div>
+            <Image
+              src={logo_travellite}
+              alt="Image"
+              className=" h-fit w-28 md:p-10 dark:brightness-[0.2] dark:grayscale"
+              width={192}
+              style={{ padding: 0 }}
+            />
+            <div className={'flex gap-2 items-center'}>
+              <ChevronRight size={16} />
               <a>Home </a>
             </div>
           </div>

@@ -138,7 +138,7 @@ const EventsListPanelItems = () => {
       <Separator orientation={'horizontal'} />
       {eventsList ? (
         eventsList.size === 0 ? (
-          <p className="text-muted-foreground">
+          <p className="p-4 text-muted-foreground">
             No events scheduled for today.
           </p>
         ) : (
