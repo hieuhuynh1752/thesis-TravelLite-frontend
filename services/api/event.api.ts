@@ -24,3 +24,18 @@ export const updateEvent = async (
   const response = await api.put(`/events/${eventId}`, data);
   return response.data;
 };
+
+export const getPublicEvents = async () => {
+  const response = await api.get(`/events/public`);
+  return response.data;
+};
+
+export const getSinglePublicEvent = async (eventId: number) => {
+  const response = await api.get(`/events/public/${eventId}`);
+  return response.data;
+};
+
+export const getSingleEvent = async (eventId: number) => {
+  const response = await api.get(`/events/${eventId}`);
+  return response.data;
+};

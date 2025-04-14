@@ -1,0 +1,93 @@
+'use client';
+import * as React from 'react';
+import { SidebarLeft } from '@/components/sidebar-left';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+import { Separator } from '@/components/ui/separator';
+import Image from 'next/image';
+import logo_travellite from '@/img/logo_travellite.png';
+import { ChevronRight } from 'lucide-react';
+import Cookie from 'js-cookie';
+import { UserRole } from '../../services/api/type.api';
+import { Button } from '@/components/ui/button';
+import { useRouter, usePathname } from 'next/navigation';
+
+export default function HeaderWrapper({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const router = useRouter();
+  const pathName = usePathname();
+  const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(false);
+  const [shouldShowHeader, setShouldShowHeader] =
+    React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    if (pathName !== '/login' && pathName !== '/register') {
+      setShouldShowHeader(true);
+      const role = Cookie.get('role');
+      if (role === UserRole.USER || role === UserRole.ADMIN) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+    } else {
+      setShouldShowHeader(false);
+      setIsLoggedIn(false);
+    }
+  }, [pathName]);
+
+  return (
+    <SidebarProvider>
+      {isLoggedIn && <SidebarLeft />}
+      <SidebarInset>
+        {shouldShowHeader && (
+          <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background z-10 border-b-2 border-muted/30">
+            {isLoggedIn ? (
+              <div className="flex flex-1 items-center gap-2 px-3">
+                <SidebarTrigger />
+                <Separator orientation="vertical" className="mr-2 h-4" />
+                <Image
+                  src={logo_travellite}
+                  alt="Image"
+                  className=" h-fit w-28 md:p-10 dark:brightness-[0.2] dark:grayscale"
+                  width={192}
+                  style={{ padding: 0 }}
+                />
+                <div className={'flex gap-2 items-center'}>
+                  <ChevronRight size={16} />
+                  <a>Home </a>
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-between w-full">
+                <div className="flex flex-1 items-center gap-2 px-3">
+                  <a
+                    className="hover:cursor-pointer"
+                    onClick={() => router.push('/')}
+                  >
+                    <Image
+                      src={logo_travellite}
+                      alt="Image"
+                      className=" h-fit w-28 md:p-10 dark:brightness-[0.2] dark:grayscale"
+                      width={192}
+                      style={{ padding: 0 }}
+                    />
+                  </a>
+                </div>
+                <div className="pr-4">
+                  <Button onClick={() => router.push('/login')}>Login</Button>
+                </div>
+              </div>
+            )}
+          </header>
+        )}
+        {children}
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
