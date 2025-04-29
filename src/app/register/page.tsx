@@ -4,6 +4,7 @@ import Image from 'next/image';
 import register_landing from '../../img/register_landing.svg';
 import { RegisterForm } from '@/components/register-form';
 import Link from 'next/link';
+import logo_travellite from '@/img/logo_travellite.png';
 
 export default function RegisterPage() {
   return (
@@ -14,7 +15,14 @@ export default function RegisterPage() {
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <GalleryVerticalEnd className="size-4" />
             </div>
-            TravelLite Inc.
+
+            <Image
+              src={logo_travellite}
+              alt="Image"
+              className=" h-fit w-28 md:p-10 dark:brightness-[0.2] dark:grayscale"
+              width={192}
+              style={{ padding: 0 }}
+            />
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">
@@ -23,7 +31,7 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
-      <div className="relative hidden bg-muted lg:block">
+      <div className="relative hidden bg-muted/15 lg:block">
         <Image
           src={register_landing}
           alt="Image"

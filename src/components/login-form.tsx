@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 
 import * as React from 'react';
 import { login } from '../../services/api/auth.api';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useUserContext } from '@/contexts/user-context';
 import { toast } from 'sonner';
 
@@ -17,6 +17,7 @@ export function LoginForm({
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { setUser } = useUserContext();
 
   const handleLogin = React.useCallback(async () => {
@@ -26,13 +27,17 @@ export function LoginForm({
         document.cookie = `token=${response.data.access_token}; path=/;`;
         document.cookie = `role=${response.data.user.role}; path=/`;
         setUser?.(response.data.user);
-        router.push('/dashboard');
+        if (searchParams.get('eventRegister')) {
+          router.push('/explore/events/' + searchParams.get('eventRegister'));
+        } else {
+          router.push('/dashboard');
+        }
         toast('Login successful! Welcome back!');
       }
     } catch (err) {
       toast('Login failed: ' + err);
     }
-  }, [email, password, router, setUser]);
+  }, [email, password, router, searchParams, setUser]);
 
   return (
     <form className={cn('flex flex-col gap-6', className)} {...props}>
@@ -89,7 +94,15 @@ export function LoginForm({
           variant="outline"
           className="w-full"
           type="button"
-          onClick={() => router.push('/register')}
+          onClick={() => {
+            if (searchParams.get('eventRegister')) {
+              router.push(
+                '/register?eventRegister=' + searchParams.get('eventRegister'),
+              );
+            } else {
+              router.push('/register');
+            }
+          }}
         >
           Register
         </Button>

@@ -164,8 +164,8 @@ const EventsListPanelItems = () => {
                   {eventsToRender.map((event, key) => (
                     <div
                       key={key}
-                      className={`block shadow-none transition-shadow duration-300 cursor-pointer hover:shadow-md hover:shadow-gray-400 p-4 rounded-md w-full 
-                      ${event.id === selectedEvent?.id ? 'border-gray-500 border-2 border-l-8 bg-white' : 'border-gray-300 border-2 border-l-8 bg-white'}
+                      className={`block shadow-none transition-shadow duration-300 cursor-pointer hover:shadow-md hover:shadow-muted p-4 rounded-md w-full 
+                      ${event.id === selectedEvent?.id ? 'border-primary border-2 border-l-8 bg-white' : 'border-muted border-2 border-l-8 bg-white'}
                        relative`}
                       onClick={() => handleSelectEvent(event)}
                     >
@@ -179,7 +179,7 @@ const EventsListPanelItems = () => {
                       </p>
                       {event.occurrence === EventOccurrence.DAILY && (
                         <div
-                          className={`absolute top-0 right-0 rounded-bl-md rounded-tr-md p-2 ${event.id === selectedEvent?.id ? 'border-gray-500 border-l-2 border-b-2 bg-white' : 'border-gray-300 border-b-2 border-l-2 bg-white'}`}
+                          className={`absolute text-primary top-0 right-0 rounded-bl-md rounded-tr-md p-2 ${event.id === selectedEvent?.id ? 'border-primary border-l-2 border-b-2 bg-white' : 'border-muted border-b-2 border-l-2 bg-white'}`}
                         >
                           <Repeat size={14} />
                         </div>

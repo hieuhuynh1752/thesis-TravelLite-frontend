@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Calendar as CalendarIcon, Plus } from 'lucide-react';
+import { Calendar as CalendarIcon, Info, Plus } from 'lucide-react';
 import { Map, useMap } from '@vis.gl/react-google-maps';
 import GoogleMapsAutocomplete from '@/components/userPage/maps/places-autocomplete.view';
 import { MarkerWithInfoWindow } from '@/components/userPage/maps/custom-marker.view';
@@ -26,7 +26,11 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { EventOccurrence, UserType } from '../../../services/api/type.api';
+import {
+  EventOccurrence,
+  EventVisibility,
+  UserType,
+} from '../../../services/api/type.api';
 import { getAllUsers, getUserById } from '../../../services/api/user.api';
 import { useUserContext } from '@/contexts/user-context';
 import ParticipantChip from '@/components/ui/chip';
@@ -52,6 +56,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 export interface CreateOrUpdateEventDialogProps {
   asUpdate?: {
@@ -63,6 +74,7 @@ export interface CreateOrUpdateEventDialogProps {
     locationId: number | null;
     participants: UserType[];
     dateTime: string;
+    visibility: EventVisibility;
   };
 }
 
@@ -82,6 +94,9 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
   const [participantInputValue, setParticipantInputValue] = React.useState('');
   const [date, setDate] = React.useState<Date>();
   const [timeValue, setTimeValue] = React.useState<string>('00:00');
+  const [eventVisibility, setEventVisibility] = React.useState(
+    EventVisibility.PRIVATE,
+  );
 
   const participantsInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -103,6 +118,7 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
             occurrence,
             creatorId: user.id,
             participantIds: participants.map((participant) => participant.id),
+            visibility: eventVisibility,
           },
           placeData: {
             googlePlaceId: selectedPlace.place_id ?? '',
@@ -117,6 +133,7 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
     }, [
       date,
       description,
+      eventVisibility,
       occurrence,
       participants,
       selectedPlace,
@@ -224,6 +241,7 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
     setTitle('');
     setDescription('');
     setOccurrence(EventOccurrence.SINGLE);
+    setEventVisibility(EventVisibility.PRIVATE);
   }, [fetchUsers]);
 
   const handleSubmit = React.useCallback(() => {
@@ -314,6 +332,7 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
       setDestination(asUpdate.selectedPlace?.formatted_address ?? '');
       setSelectedPlace(asUpdate.selectedPlace);
       setParticipants(asUpdate.participants);
+      setEventVisibility(asUpdate.visibility);
       setAllUsers((prevState) => {
         const availableUsersList = prevState?.filter(
           (user) =>
@@ -390,6 +409,52 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
               />
             </div>
             <div className="grid w-full max-w-sm items-center gap-1.5">
+              <div className="flex gap-1 items-center">
+                <Label htmlFor="visibility">Visibility</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info
+                        size={20}
+                        className="hover:bg-gray-200 rounded-full p-0.5"
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      You can let any user to browse and join the Event if
+                      Public mode is activated!
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <RadioGroup
+                value={eventVisibility}
+                onValueChange={(value) =>
+                  setEventVisibility(value as EventVisibility)
+                }
+              >
+                <div className="flex gap-4">
+                  <div
+                    className={`flex items-center space-x-2 pr-2 pl-1 py-1 border rounded-2xl ${eventVisibility === EventVisibility.PRIVATE ? 'border-primary' : 'border-gray-200'}`}
+                  >
+                    <RadioGroupItem
+                      value={EventVisibility.PRIVATE}
+                      id="private-event"
+                    />
+                    <Label htmlFor="private-event">Private</Label>
+                  </div>
+                  <div
+                    className={`flex items-center space-x-2 pr-2 pl-1 py-1 border rounded-2xl ${eventVisibility === EventVisibility.PUBLIC ? 'border-primary' : 'border-gray-200'}`}
+                  >
+                    <RadioGroupItem
+                      value={EventVisibility.PUBLIC}
+                      id="public-event"
+                    />
+                    <Label htmlFor="public-event">Public</Label>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="participants">Participants</Label>
               <Command shouldFilter={false}>
                 <div
@@ -454,7 +519,6 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
                       mode="single"
                       selected={date}
                       onSelect={handleDaySelect}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>

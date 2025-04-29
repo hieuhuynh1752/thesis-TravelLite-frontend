@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Home, Calendar } from 'lucide-react';
+import { Home, Calendar, Telescope } from 'lucide-react';
 
 import { NavMain } from '@/components/nav-main';
 import { Sidebar, SidebarHeader } from '@/components/ui/sidebar';
@@ -19,6 +19,11 @@ const routes = {
       title: 'Events',
       url: '/dashboard/user/events',
       icon: Calendar,
+    },
+    {
+      title: 'Explore',
+      url: '/explore',
+      icon: Telescope,
     },
   ],
 };

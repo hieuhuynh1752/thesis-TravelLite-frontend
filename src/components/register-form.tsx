@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 
 import * as React from 'react';
 import { register } from '../../services/api/auth.api';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 export function RegisterForm({
@@ -23,16 +23,23 @@ export function RegisterForm({
     retypePassword: '',
   });
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleRegister = React.useCallback(async () => {
     try {
       await register(formData.email, formData.password);
       toast('Registration successful! Please login to continue!');
-      router.push('/login');
+      if (searchParams.get('eventRegister')) {
+        router.push(
+          '/login?eventRegister=' + searchParams.get('eventRegister'),
+        );
+      } else {
+        router.push('/login');
+      }
     } catch (err) {
       toast('Registration failed: ' + err);
     }
-  }, [formData, router]);
+  }, [formData.email, formData.password, router, searchParams]);
 
   const handleChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,7 +134,15 @@ export function RegisterForm({
           variant="outline"
           className="w-full"
           type="button"
-          onClick={() => router.push('/login')}
+          onClick={() => {
+            if (searchParams.get('eventRegister')) {
+              router.push(
+                '/login?eventRegister=' + searchParams.get('eventRegister'),
+              );
+            } else {
+              router.push('/login');
+            }
+          }}
         >
           Login
         </Button>

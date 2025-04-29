@@ -40,7 +40,11 @@ export function NavMain({
               <SidebarMenuButton
                 tooltip={item.title}
                 onClick={() => handleSidebarMenuItemClick(item.url)}
-                isActive={pathname === item.url}
+                isActive={
+                  pathname === item.url ||
+                  (pathname.split('/')[1] === 'explore' &&
+                    item.url === '/explore')
+                }
               >
                 {item.icon && <item.icon />}
                 <span>{item.title}</span>

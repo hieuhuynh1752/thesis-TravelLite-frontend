@@ -19,6 +19,11 @@ export enum EventStatus {
   CANCELLED = 'CANCELLED',
 }
 
+export enum EventVisibility {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+}
+
 export enum EventParticipantStatus {
   DECLINED = 'DECLINED',
   PENDING = 'PENDING',
@@ -70,6 +75,7 @@ export interface EventType {
   updatedAt?: string;
   title: string;
   description: string;
+  visibility: EventVisibility;
   occurrence: EventOccurrence;
   participants: EventParticipantType[];
   status?: EventStatus;
@@ -83,6 +89,7 @@ export interface FlatEventType {
   creatorId: number;
   participantIds?: number[];
   locationId: number | null;
+  visibility: EventVisibility;
   dateTime: Date;
   occurrence: EventOccurrence;
   title: string;

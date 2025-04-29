@@ -15,10 +15,10 @@ interface ParticipantChipProps {
 const ParticipantChip = (props: ParticipantChipProps) => {
   return (
     <div
-      className={`flex gap-2 ${props.isHost ? 'border-gray-500 pl-1 pr-2' : props.hideClearButton ? 'border-gray-400 pl-1 pr-2' : 'border-gray-400 px-1'} rounded-full border-2 py-1 items-center`}
+      className={`flex gap-2 ${props.isHost ? 'border-gray-500 pl-1 pr-2' : props.hideClearButton ? 'border-gray-400 pl-1 pr-2' : 'border-gray-400 px-1'} rounded-full border py-1 items-center text-sm`}
     >
       <div
-        className={`rounded-full text-white w-6 h-6 flex justify-center ${props.isHost ? 'bg-gray-500 border-gray-500 italic w-full px-2' : 'bg-green-500'}`}
+        className={`rounded-full text-white w-5 flex justify-center ${props.isHost ? 'bg-gray-500 border-gray-500 italic w-full px-2' : 'bg-green-500'}`}
       >
         {props.isHost ? (
           <span>{'Host'}</span>
@@ -38,10 +38,10 @@ const ParticipantChip = (props: ParticipantChipProps) => {
       {!props.hideClearButton && (
         <Button
           variant="ghost"
-          className="h-6 w-6 p-2 rounded-full bg-gray-100 hover:bg-gray-300"
+          className="h-4 w-4 p-1 rounded-full bg-gray-100 hover:bg-gray-300"
           onClick={props.onClearButtonClick}
         >
-          <X size={16} />
+          <X size={12} />
         </Button>
       )}
     </div>

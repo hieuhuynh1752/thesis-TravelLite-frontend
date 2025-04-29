@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { getPublicEvents } from '../../services/api/event.api';
+import { getPublicEvents } from '../../../services/api/event.api';
 import {
   Card,
   CardContent,
@@ -10,30 +10,56 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { EventType } from '../../services/api/type.api';
-import { Clock, MapPin, ScanText, UserCog } from 'lucide-react';
+import { EventType } from '../../../services/api/type.api';
+import { CheckCircle, Clock, MapPin, ScanText, UserCog } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
-import { useRouter, redirect } from 'next/navigation';
-import { UserRole } from '../../services/api/type.api';
-import Cookie from 'js-cookie';
+import { useRouter } from 'next/navigation';
+import { useUserContext } from '@/contexts/user-context';
+import { getUserById } from '../../../services/api/user.api';
+import { getMe } from '../../../services/api/auth.api';
+import { participantSubscribeToEvent } from '../../../services/api/event-participant.api';
+import { toast } from 'sonner';
 
-export default function Home() {
+export default function ExplorePage() {
   const router = useRouter();
+  const { user, setUser, setEvents } = useUserContext();
+  const [userId, setUserId] = React.useState<number | undefined>();
   const [publicEvents, setPublicEvents] = React.useState<EventType[]>([]);
 
-  React.useEffect(() => {
-    const role = Cookie.get('role');
-    if (role === UserRole.ADMIN || role === UserRole.USER) {
-      redirect('/dashboard');
-    } else {
-      getPublicEvents().then((events) => setPublicEvents(events));
+  const handleGetUserData = React.useCallback(() => {
+    if (!!userId) {
+      getUserById(userId).then((value) => {
+        setUser?.({
+          id: value.id,
+          name: value.name,
+          email: value.email,
+          role: value.role,
+        });
+        setEvents?.(value.eventsParticipated);
+      });
     }
-  }, []);
+  }, [userId, setUser, setEvents]);
 
-  console.log(publicEvents);
+  const handleRegisterToEvent = React.useCallback(
+    (event: EventType) => {
+      if (!!userId && event.id) {
+        participantSubscribeToEvent({ userId, eventId: event.id });
+        getPublicEvents().then((events) => setPublicEvents(events));
+        toast(`You have registered to the event: ${event.title}`);
+      }
+    },
+    [userId],
+  );
+
+  React.useEffect(() => {
+    getPublicEvents().then((events) => setPublicEvents(events));
+    getMe().then((userId) => setUserId(userId));
+    handleGetUserData();
+  }, [handleGetUserData]);
+
   return (
     <>
-      <p className="text-3xl font-bold p-4">Upcoming Events</p>
+      <p className="text-3xl font-bold p-4">Upcoming Public Events</p>
       <div className="flex flex-wrap gap-4 p-4">
         {publicEvents &&
           publicEvents.map((event, index) => {
@@ -91,13 +117,21 @@ export default function Home() {
                   >
                     See more
                   </Button>
-                  <Button
-                    onClick={() =>
-                      router.push('/login?eventRegister=' + event.id)
-                    }
-                  >
-                    Register now!
-                  </Button>
+                  {event.participants.find(
+                    (participant) => participant.user.id === user?.id,
+                  ) ? (
+                    <div
+                      className={
+                        'flex gap-2 items-center text-sm font-bold text-primary border-primary border-dashed border rounded p-2 '
+                      }
+                    >
+                      <CheckCircle size={16} /> Registered
+                    </div>
+                  ) : (
+                    <Button onClick={() => handleRegisterToEvent(event)}>
+                      Register now!
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             );

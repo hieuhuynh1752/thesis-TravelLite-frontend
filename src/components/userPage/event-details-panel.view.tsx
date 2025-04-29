@@ -49,6 +49,7 @@ function EventDetailPanel({
                     title: selectedEvent.title,
                     description: selectedEvent.description,
                     occurrence: selectedEvent.occurrence,
+                    visibility: selectedEvent.visibility,
                     locationId: selectedEvent.location.id,
                     selectedPlace: {
                       name: selectedEvent.location.name,

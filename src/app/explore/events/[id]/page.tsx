@@ -2,8 +2,8 @@
 import * as React from 'react';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { EventType } from '../../../../services/api/type.api';
-import { getSinglePublicEvent } from '../../../../services/api/event.api';
+import { EventType } from '../../../../../services/api/type.api';
+import { getSinglePublicEvent } from '../../../../../services/api/event.api';
 import { format, parseISO } from 'date-fns';
 import {
   Clock,
@@ -12,25 +12,60 @@ import {
   Share,
   UserCog,
   ClipboardPenLine,
+  CheckCircle,
+  ArrowLeft,
 } from 'lucide-react';
 import { APIProvider, Map } from '@vis.gl/react-google-maps';
 import { GoogleMapsContext } from '@/contexts/google-maps-context';
 import { MarkerWithInfoWindow } from '@/components/userPage/maps/custom-marker.view';
 import { useRouter } from 'next/navigation';
+import { useUserContext } from '@/contexts/user-context';
+import { getUserById } from '../../../../../services/api/user.api';
+import { getMe } from '../../../../../services/api/auth.api';
+import { participantSubscribeToEvent } from '../../../../../services/api/event-participant.api';
+import { toast } from 'sonner';
 
 export default function EventDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const { user, setUser, setEvents } = useUserContext();
   const [event, setEvent] = React.useState<EventType>();
+  const [userId, setUserId] = React.useState<number | undefined>();
   const [googleMaps, setGoogleMaps] = React.useState<
     typeof google.maps | undefined
   >(undefined);
 
+  const handleRegisterToEvent = React.useCallback(() => {
+    if (!!userId && !!event && !!event.id) {
+      participantSubscribeToEvent({ userId, eventId: event.id });
+      getSinglePublicEvent(Number.parseInt(params.id as string)).then((data) =>
+        setEvent(data),
+      );
+      toast(`You have registered to the event: ${event.title}`);
+    }
+  }, [event, params.id, userId]);
+
+  const handleGetUserData = React.useCallback(() => {
+    if (!!userId) {
+      getUserById(userId).then((value) => {
+        setUser?.({
+          id: value.id,
+          name: value.name,
+          email: value.email,
+          role: value.role,
+        });
+        setEvents?.(value.eventsParticipated);
+      });
+    }
+  }, [userId, setUser, setEvents]);
+
   React.useEffect(() => {
+    getMe().then((userId) => setUserId(userId));
+    handleGetUserData();
     getSinglePublicEvent(Number.parseInt(params.id as string)).then((data) =>
       setEvent(data),
     );
-  }, [params.id]);
+  }, [handleGetUserData, params.id]);
 
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -47,6 +82,21 @@ export default function EventDetailsPage() {
     <>
       <div>
         <div className="p-4 items-center border-b-2 border-muted/50 border-dashed">
+          <div className="flex gap-2 items-center pb-4">
+            <Button
+              variant={'ghost'}
+              className={'border border-primary'}
+              onClick={() => {
+                if (!!userId) {
+                  router.push('/explore');
+                } else {
+                  router.push('/');
+                }
+              }}
+            >
+              <ArrowLeft /> Back to explore
+            </Button>
+          </div>
           <div className="flex flex-wrap justify-between w-full">
             <div className="flex gap-4 items-center">
               <div className="flex flex-col text-primary border-2 border-muted rounded-xl h-fit">
@@ -69,10 +119,31 @@ export default function EventDetailsPage() {
                 <Share />
                 Share
               </Button>
-              <Button>
-                <ClipboardPenLine />
-                Register
-              </Button>
+              {!!user &&
+              event?.participants.find(
+                (participant) => participant.user.id === user?.id,
+              ) ? (
+                <div
+                  className={
+                    'flex gap-2 items-center text-sm font-bold text-primary border-primary border-dashed border rounded p-2 '
+                  }
+                >
+                  <CheckCircle size={16} /> Registered
+                </div>
+              ) : (
+                <Button
+                  onClick={() => {
+                    if (!userId) {
+                      router.push('/login?eventRegister=' + event?.id);
+                    } else {
+                      handleRegisterToEvent();
+                    }
+                  }}
+                >
+                  <ClipboardPenLine />
+                  Register
+                </Button>
+              )}
             </div>
           </div>
         </div>
