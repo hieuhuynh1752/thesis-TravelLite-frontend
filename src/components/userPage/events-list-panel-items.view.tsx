@@ -12,7 +12,11 @@ import {
   setMinutes,
   setSeconds,
 } from 'date-fns';
-import { EventOccurrence, EventType } from '../../../services/api/type.api';
+import {
+  EventOccurrence,
+  EventParticipantStatus,
+  EventType,
+} from '../../../services/api/type.api';
 import { Clock, Repeat } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CheckedState } from '@radix-ui/react-checkbox';
@@ -30,7 +34,9 @@ const EventsListPanelItems = () => {
   const handleEvents = React.useCallback(
     (showAll?: boolean) => {
       if (events) {
-        const participatedEvents = events.map((p) => p.event);
+        const participatedEvents = events
+          .filter((event) => event.status === EventParticipantStatus.ACCEPTED)
+          .map((p) => p.event);
         const filteredEvents = participatedEvents.filter(
           (event) =>
             isToday(event.dateTime) ||

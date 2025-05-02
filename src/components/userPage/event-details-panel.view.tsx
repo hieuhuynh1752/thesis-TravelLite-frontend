@@ -41,35 +41,39 @@ function EventDetailPanel({
       >
         <div className={'flex justify-between items-center'}>
           <div className="font-bold text-2xl">{selectedEvent?.title}</div>
-          <CreateOrUpdateEventDialog
-            asUpdate={
-              selectedEvent
-                ? {
-                    id: selectedEvent.id,
-                    title: selectedEvent.title,
-                    description: selectedEvent.description,
-                    occurrence: selectedEvent.occurrence,
-                    visibility: selectedEvent.visibility,
-                    locationId: selectedEvent.location.id,
-                    selectedPlace: {
-                      name: selectedEvent.location.name,
-                      place_id: selectedEvent.location.googlePlaceId,
-                      geometry: {
-                        location: new google.maps.LatLng(
-                          selectedEvent.location.latitude,
-                          selectedEvent.location.longtitude,
-                        ),
-                      } as google.maps.places.PlaceGeometry,
-                      formatted_address: selectedEvent.location.address,
-                    } as google.maps.places.PlaceResult,
-                    participants: selectedEvent.participants
-                      .filter((participant) => participant.user.id !== user?.id)
-                      .map((participant) => participant.user),
-                    dateTime: selectedEvent.dateTime,
-                  }
-                : undefined
-            }
-          />
+          {selectedEvent?.creator.id === user?.id && (
+            <CreateOrUpdateEventDialog
+              asUpdate={
+                selectedEvent
+                  ? {
+                      id: selectedEvent.id,
+                      title: selectedEvent.title,
+                      description: selectedEvent.description,
+                      occurrence: selectedEvent.occurrence,
+                      visibility: selectedEvent.visibility,
+                      locationId: selectedEvent.location.id,
+                      selectedPlace: {
+                        name: selectedEvent.location.name,
+                        place_id: selectedEvent.location.googlePlaceId,
+                        geometry: {
+                          location: new google.maps.LatLng(
+                            selectedEvent.location.latitude,
+                            selectedEvent.location.longtitude,
+                          ),
+                        } as google.maps.places.PlaceGeometry,
+                        formatted_address: selectedEvent.location.address,
+                      } as google.maps.places.PlaceResult,
+                      participants: selectedEvent.participants
+                        .filter(
+                          (participant) => participant.user.id !== user?.id,
+                        )
+                        .map((participant) => participant.user),
+                      dateTime: selectedEvent.dateTime,
+                    }
+                  : undefined
+              }
+            />
+          )}
         </div>
         <Separator orientation={'horizontal'} />
         <div className={`text-gray-700`}>
@@ -128,7 +132,7 @@ function EventDetailPanel({
           <Separator orientation="horizontal" className="flex flex-1" />
           <Button
             variant={'ghost'}
-            className="h-6 border-gray-400 border bg-white"
+            className="h-6 border-gray-400 border bg-white p-0 px-2"
             onClick={() => handleToggleEventDetail()}
           >
             {eventDetailExpanded ? (
@@ -154,7 +158,7 @@ function EventDetailPanel({
           <Button
             onClick={() => toggleRoutesPanel()}
             variant={'ghost'}
-            className="border-gray-400 border p-2 py-1 mr-1"
+            className="border-gray-400 border px-2 py-0 mr-1 h-6"
           >
             {isRoutesPanelVisible ? (
               <ChevronsRight size={8} />

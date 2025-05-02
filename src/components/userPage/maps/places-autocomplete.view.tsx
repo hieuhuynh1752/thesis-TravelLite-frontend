@@ -87,6 +87,12 @@ const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = (
         setSuggestions(null);
         props.onInputValueChange?.(placeDetails?.formatted_address ?? '');
         setSessionToken(new places.AutocompleteSessionToken());
+        if (
+          placeDetails?.formatted_address &&
+          placeDetails.formatted_address !== ''
+        ) {
+          setValue(placeDetails.formatted_address);
+        }
 
         setFetchingData(false);
       };
@@ -136,7 +142,7 @@ const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = (
             </Button>
           )}
         </CommandInput>
-        <CommandList className="z-10 bg-muted">
+        <CommandList className="z-10 bg-gray-50">
           {fetchingData && <CommandLoading />}
           {suggestions !== null && (
             <>
