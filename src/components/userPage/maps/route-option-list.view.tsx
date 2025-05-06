@@ -27,7 +27,7 @@ const RouteOptionList: React.FC = () => {
 
   return (
     <>
-      <div className="flex items-center justify-around">
+      <div className="flex items-center justify-around pb-2 border-b border-gray-200">
         {TravelMode && (
           <>
             <button
@@ -80,7 +80,7 @@ const RouteOptionList: React.FC = () => {
           </>
         )}
       </div>
-      <div className="flex-1 flex flex-col gap-2 overflow-y-auto bg-muted">
+      <div className="flex-1 flex flex-col gap-2 overflow-y-auto">
         <RouteOptionItem travelMode={selectedTravelMode} />
       </div>
     </>

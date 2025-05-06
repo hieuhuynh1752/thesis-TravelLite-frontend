@@ -24,7 +24,11 @@ import { Separator } from '@/components/ui/separator';
 import { useUserContext } from '@/contexts/user-context';
 import { useTravelContext } from '@/contexts/travel-context';
 
-const EventsListPanelItems = () => {
+interface EventsListPanelItemsProps {
+  extended?: boolean;
+}
+
+const EventsListPanelItems = ({ extended }: EventsListPanelItemsProps) => {
   const [eventsList, setEventsList] =
     React.useState<Map<string, EventType[]>>();
   const [showPassedEvent, setShowPassedEvent] = React.useState(false);
@@ -37,21 +41,29 @@ const EventsListPanelItems = () => {
         const participatedEvents = events
           .filter((event) => event.status === EventParticipantStatus.ACCEPTED)
           .map((p) => p.event);
-        const filteredEvents = participatedEvents.filter(
-          (event) =>
-            isToday(event.dateTime) ||
-            isFuture(event.dateTime) ||
-            event.occurrence === EventOccurrence.DAILY,
-        );
-        let sortedEvents = filteredEvents.sort(
-          (a, b) =>
+        const filteredEvents = extended
+          ? participatedEvents
+          : participatedEvents.filter(
+              (event) =>
+                isToday(event.dateTime) ||
+                isFuture(event.dateTime) ||
+                event.occurrence === EventOccurrence.DAILY,
+            );
+        let sortedEvents = filteredEvents.sort((a, b) => {
+          if (extended) {
+            return (
+              new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()
+            );
+          }
+          return (
             new Date(
               a.occurrence === EventOccurrence.DAILY ? '' : a.dateTime,
             ).getTime() -
             new Date(
               b.occurrence === EventOccurrence.DAILY ? '' : b.dateTime,
-            ).getTime(),
-        );
+            ).getTime()
+          );
+        });
 
         const sortedPastEvents = participatedEvents
           .filter(
@@ -69,11 +81,13 @@ const EventsListPanelItems = () => {
         }
         const upcomingEventsMap = new Map<string, EventType[]>();
         for (const event of sortedEvents) {
-          let dayObject = new Date(
-            event.occurrence === EventOccurrence.DAILY
-              ? new Date().setHours(getHours(event.dateTime))
-              : event.dateTime,
-          );
+          let dayObject = extended
+            ? new Date(event.dateTime)
+            : new Date(
+                event.occurrence === EventOccurrence.DAILY
+                  ? new Date().setHours(getHours(event.dateTime))
+                  : event.dateTime,
+              );
           dayObject = setHours(
             setMinutes(setSeconds(setMilliseconds(dayObject, 0), 0), 0),
             0,
@@ -99,17 +113,19 @@ const EventsListPanelItems = () => {
         }
       }
     },
-    [events, setSelectedEvent],
+    [events, extended, setSelectedEvent],
   );
 
   const handleSelectEvent = React.useCallback(
     (newSelectedEvent: EventType) => {
       if (newSelectedEvent !== selectedEvent) {
-        resetAllTravelLogs();
+        if (!extended) {
+          resetAllTravelLogs();
+        }
         setSelectedEvent?.(newSelectedEvent);
       }
     },
-    [resetAllTravelLogs, setSelectedEvent, selectedEvent],
+    [resetAllTravelLogs, setSelectedEvent, selectedEvent, extended],
   );
 
   const handleShowAllCheckboxChange = React.useCallback(
@@ -125,23 +141,28 @@ const EventsListPanelItems = () => {
   React.useEffect(() => {
     handleEvents();
   }, [handleEvents]);
+
   return (
-    <div className="flex flex-col pt-4">
-      <div className="flex gap-4 p-4 pt-0">
-        <Checkbox
-          id="showAll"
-          className="flex items-center space-x-2"
-          onCheckedChange={handleShowAllCheckboxChange}
-          checked={showPassedEvent}
-        />{' '}
-        <label
-          htmlFor="showAll"
-          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Show all passed events
-        </label>
-      </div>
-      <Separator orientation={'horizontal'} />
+    <div className="flex flex-col">
+      {!extended && (
+        <>
+          <div className="flex gap-4 p-4">
+            <Checkbox
+              id="showAll"
+              className="flex items-center space-x-2"
+              onCheckedChange={handleShowAllCheckboxChange}
+              checked={showPassedEvent}
+            />{' '}
+            <label
+              htmlFor="showAll"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Show all passed events
+            </label>
+          </div>
+          <Separator orientation={'horizontal'} />
+        </>
+      )}
       {eventsList ? (
         eventsList.size === 0 ? (
           <p className="p-4 text-muted-foreground">
@@ -150,21 +171,26 @@ const EventsListPanelItems = () => {
         ) : (
           <div
             className="grid w-full overflow-y-auto flex-col"
-            style={{ maxHeight: 'calc(50vh - 2.5rem)' }}
+            style={{
+              maxHeight: extended
+                ? 'calc(90vh - 0.5rem)'
+                : 'calc(50vh - 2.5rem)',
+            }}
           >
             {Array.from(eventsList).map(([date, eventsToRender], index) => (
               <div
                 key={index}
-                className={`flex w-full h-full gap-4 p-4 ${isPast(date) && !isToday(date) ? 'bg-muted' : 'bg-white'}`}
+                className={`flex flex-col w-full h-full gap-2 p-4 ${extended ? 'pt-0' : 'pt-4'} ${!extended && isPast(date) && !isToday(date) ? 'bg-gray-100' : 'bg-white'}`}
               >
-                <div className="flex flex-col text-gray-500">
-                  <p className="text-5xl font-extrabold self-center text-center w-full">
-                    {format(parseISO(date), 'd')}
-                  </p>
-                  <p className="text-lg font-medium px-4">
-                    {format(parseISO(date), 'MMM')}
-                  </p>
-                </div>
+                <p className="text-xl">
+                  <span className="font-bold">
+                    {format(parseISO(date), 'MMM')}{' '}
+                    {format(parseISO(date), 'd')},{' '}
+                  </span>
+                  <span className="text-gray-500">
+                    {format(parseISO(date), 'y')}
+                  </span>
+                </p>
 
                 <div className="flex flex-col gap-4 flex-1">
                   {eventsToRender.map((event, key) => (
@@ -179,7 +205,7 @@ const EventsListPanelItems = () => {
                       <p className="text-sm text-muted-foreground">
                         {event.description}
                       </p>
-                      <p className="flex text-sm items-center">
+                      <p className="flex text-sm items-center mt-2 p-1 px-2 border-gray-400 bg-gray-50 border w-fit rounded-full">
                         <Clock className="mr-2" size={16} />{' '}
                         {format(parseISO(event.dateTime), 'hh:mm a')}
                       </p>

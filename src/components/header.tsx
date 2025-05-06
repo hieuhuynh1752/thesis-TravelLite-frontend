@@ -35,8 +35,13 @@ export default function HeaderWrapper({
   const currentPageInfo = React.useMemo(() => {
     const breadcrumbs = pathName.split('/');
     if (breadcrumbs[1] === 'dashboard') {
-      if (!!breadcrumbs[3] && breadcrumbs[3] === 'events') {
-        return 'Events';
+      if (!!breadcrumbs[3]) {
+        if (breadcrumbs[3] === 'events') {
+          return 'Events';
+        }
+        if (breadcrumbs[3] === 'travelPlans') {
+          return 'Travel Plans';
+        }
       } else return 'Home';
     } else return breadcrumbs[1];
   }, [pathName]);

@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 import { Card, CardContent } from '@/components/ui/card';
 import { ReducedTravelPreferencesDataType } from '@/utils/charts-util';
-import { ChartContainer } from '@/components/ui/chart';
+import { ChartContainer } from '@/components/ui/charts/chart';
 import { Leaf } from 'lucide-react';
 
 export interface TravelPreferencesChartProps {

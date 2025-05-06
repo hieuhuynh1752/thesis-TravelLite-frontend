@@ -1,6 +1,7 @@
 import {
   EventOccurrence,
   EventParticipantType,
+  EventType,
 } from '../../services/api/type.api';
 import {
   addDays,
@@ -186,4 +187,52 @@ export const calculateTotalCo2 = (
     counter += item.totalCo2!;
   }
   return counter.toFixed(2);
+};
+
+export const calculatePersonalEmissionRateOnEvent = (
+  data: EventParticipantType[],
+  userId: number,
+): { name: string; value: number }[] => {
+  const output = [];
+  output.push({
+    name: 'You',
+    value:
+      data.find((participant) => participant.user.id === userId)?.travelPlan
+        ?.totalCo2 ?? 0,
+  });
+  let totalCo2OfAllParticipants = 0;
+  data.forEach(
+    (participant) =>
+      (totalCo2OfAllParticipants += participant.travelPlan?.totalCo2 ?? 0),
+  );
+  console.log(data.length);
+  output.push({
+    name: 'Average',
+    value: totalCo2OfAllParticipants / data.length,
+  });
+  return output;
+};
+
+export const calculatePersonalEmissionPercentageOnEvent = (
+  data: EventParticipantType[],
+  userId: number,
+): { name: string; value: number }[] => {
+  const output = [];
+  output.push({
+    name: 'You',
+    value:
+      data.find((participant) => participant.user.id === userId)?.travelPlan
+        ?.totalCo2 ?? 0,
+  });
+  let totalCo2OfAllParticipants = 0;
+  data.forEach((participant) => {
+    if (participant.user.id !== userId) {
+      totalCo2OfAllParticipants += participant.travelPlan?.totalCo2 ?? 0;
+    }
+  });
+  output.push({
+    name: 'Others (Total)',
+    value: totalCo2OfAllParticipants,
+  });
+  return output;
 };

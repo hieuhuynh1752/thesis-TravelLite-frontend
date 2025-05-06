@@ -8,7 +8,11 @@ import { getMe } from '../../../services/api/auth.api';
 import { getUserById } from '../../../services/api/user.api';
 import EventsListPanelItems from '@/components/userPage/events-list-panel-items.view';
 
-const EventsListPanel = () => {
+interface EventsListPanelProps {
+  extended?: boolean;
+}
+
+const EventsListPanel = ({ extended }: EventsListPanelProps) => {
   const { setUser, setEvents } = useUserContext();
   const [userId, setUserId] = React.useState<number | undefined>();
 
@@ -37,8 +41,10 @@ const EventsListPanel = () => {
   }, [handleGetUserData]);
 
   return (
-    <div className="flex flex-col w-3/4 gap-4">
-      <EventsListPanelItems />
+    <div
+      className={`flex flex-col gap-4 ${extended ? 'w-1/4 h-full' : 'w-3/4'}`}
+    >
+      <EventsListPanelItems extended={extended} />
     </div>
   );
 };

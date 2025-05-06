@@ -285,12 +285,12 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
     return null;
   }
   return (
-    <div className="p-2 bg-gray-100 min-h-full h-fit">
+    <div className="p-2 min-h-full h-fit">
       {travelMode === google.maps.TravelMode.TRANSIT && isTransitRoutes(routes)
         ? routes.map((route, index) => (
             <div
               key={generateRandomId()}
-              className={`mb-6 border border-gray-300 rounded-md bg-white p-2 border-l-8 ${selectedRoute.hashedId === travelMode! + index ? 'border-green-500' : ''}`}
+              className={`mb-6 border border-muted rounded-md bg-white p-2 border-l-8 ${selectedRoute.hashedId === travelMode! + index ? 'border-primary' : ''}`}
             >
               {/* Basic Information */}
               <div

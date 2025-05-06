@@ -47,18 +47,23 @@ export default function UserEvents() {
         {googleMaps ? (
           <TravelProvider>
             <div className="flex flex-1 gap-2 pt-2">
-              <EventsListPanel extended />
-              <div
-                className={`flex flex-1 flex-col overflow-y-auto`}
-                style={{ maxHeight: 'calc(90vh - 0.5rem)' }}
-              >
+              <div className={`flex flex-1 flex-col`}>
                 <div className="h-fit">
                   <MapContainer />
                 </div>
-                <div className="flex">
+                <div className="max-h-[50vh] flex">
+                  <EventsListPanel />
                   <Separator orientation="vertical" />
-                  <EventDetailPanel extended />
+                  <EventDetailPanel
+                    isRoutesPanelVisible={showRoutePanel}
+                    toggleRoutesPanel={toggleShowRoutePanel}
+                  />
                 </div>
+              </div>
+              <div
+                className={`${showRoutePanel ? 'w-[27vw] border-l' : 'w-0 border-0'} h-[calc(100vh-4rem)] flex border-gray-200 transition-all duration-300 ease-in-out`}
+              >
+                {showRoutePanel && <RoutesPanel />}
               </div>
             </div>
           </TravelProvider>
