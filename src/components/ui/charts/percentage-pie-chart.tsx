@@ -18,8 +18,8 @@ export function PercentagePieChart<T extends Record<string, any>>({
           data={data}
           dataKey="value"
           nameKey="name"
-          cx="50%"
-          cy="50%"
+          // cx="50%"
+          // cy="50%"
           outerRadius={100}
           fill="#8884d8"
           label

@@ -12,15 +12,17 @@ import MapContainer from '@/components/userPage/maps/map.view';
 import EventsListPanel from '@/components/userPage/events-list-panel.view';
 import EventDetailPanel from '@/components/userPage/event-details-panel.view';
 import RoutesPanel from '@/components/userPage/maps/routes-panel.view';
+import { Label } from '@/components/ui/label';
+import OverviewTravelHistoryReport from '@/components/userPage/overview-travel-history-report.view';
 
 export default function UserEvents() {
   const [googleMaps, setGoogleMaps] = React.useState<
     typeof google.maps | undefined
   >(undefined);
-  const [showRoutePanel, setShowRoutePanel] = React.useState(true);
+  const [selectedTab, setSelectedTab] = React.useState<string>('overview');
 
-  const toggleShowRoutePanel = React.useCallback(() => {
-    setShowRoutePanel((prevState) => !prevState);
+  const onSelectedTabChange = React.useCallback((tab: string) => {
+    setSelectedTab(tab);
   }, []);
 
   React.useEffect(() => {
@@ -46,21 +48,39 @@ export default function UserEvents() {
       <GoogleMapsContext.Provider value={googleMaps}>
         {googleMaps ? (
           <TravelProvider>
-            <div className="flex flex-1 gap-2 pt-2">
-              <EventsListPanel extended />
+            <div className="flex p-4 pt-2 pb-0 border-b-2 border-muted gap-2">
               <div
-                className={`flex flex-1 flex-col overflow-y-auto`}
-                style={{ maxHeight: 'calc(90vh - 0.5rem)' }}
+                className={`py-1 px-4 rounded-t-sm bg-gray-50 hover:bg-muted/20 hover:text-primary cursor-pointer ${selectedTab === 'overview' ? 'text-primary font-semibold bg-muted/50 hover:bg-muted/30' : ''}`}
+                onClick={() => onSelectedTabChange('overview')}
               >
-                <div className="h-fit">
-                  <MapContainer />
-                </div>
-                <div className="flex">
-                  <Separator orientation="vertical" />
-                  <EventDetailPanel extended />
-                </div>
+                Overview
+              </div>
+              <div
+                className={`py-1 px-4 rounded-t-sm bg-gray-50 hover:bg-muted/20 hover:text-primary cursor-pointer ${selectedTab === 'all_events' ? ' text-primary font-semibold bg-muted/50 hover:bg-muted/30' : ''}`}
+                onClick={() => onSelectedTabChange('all_events')}
+              >
+                All Events
               </div>
             </div>
+            {selectedTab === 'overview' ? (
+              <OverviewTravelHistoryReport />
+            ) : (
+              <div className="flex flex-1 gap-2 pt-4">
+                <EventsListPanel extended />
+                <div
+                  className={`flex flex-1 flex-col overflow-y-auto`}
+                  style={{ maxHeight: 'calc(90vh - 0.5rem)' }}
+                >
+                  <div className="h-fit">
+                    <MapContainer />
+                  </div>
+                  <div className="flex">
+                    <Separator orientation="vertical" />
+                    <EventDetailPanel extended />
+                  </div>
+                </div>
+              </div>
+            )}
           </TravelProvider>
         ) : (
           <>

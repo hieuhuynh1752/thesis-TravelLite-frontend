@@ -44,6 +44,9 @@ function EventDetailPanel({
     setEventDetailExpanded((prevState) => !prevState);
   }, []);
 
+  console.log(
+    selectedEvent?.participants && selectedEvent.participants.length > 0,
+  );
   return (
     <div className="w-full bg-white flex flex-col px-4 gap-2 pt-2">
       <div
@@ -87,7 +90,7 @@ function EventDetailPanel({
         </div>
         <Separator orientation={'horizontal'} />
         <div className={`text-gray-700`}>
-          <div className="inline-flex text-gray-500 font-medium items-baseline gap-1 px-2 border-l-4 border-gray-400 bg-gray-100 mr-2">
+          <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
             <Clock size={16} className="self-center" />
             {'At: '}
           </div>
@@ -96,9 +99,9 @@ function EventDetailPanel({
             : ''}
         </div>
         <div
-          className={`text-gray-700 ${eventDetailExpanded ? '' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
+          className={`text-gray-700 ${eventDetailExpanded || extended ? '' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
         >
-          <div className="inline-flex text-gray-500 font-medium items-baseline gap-1 px-2 border-l-4 border-gray-400 bg-gray-100 mr-2">
+          <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
             <UserCog size={16} className="self-center" /> Host:{' '}
           </div>
           {selectedEvent && user?.name
@@ -108,31 +111,29 @@ function EventDetailPanel({
             : 'undefined'}
         </div>
         <div
-          className={`text-gray-700 ${eventDetailExpanded ? 'flex flex-col' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
+          className={`text-gray-700 ${eventDetailExpanded || extended ? 'flex flex-col' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
         >
-          <div className="inline-flex font-medium text-gray-500 items-baseline gap-1 px-2 border-l-4 border-gray-400 bg-gray-100 w-fit mr-2">
+          <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 w-fit rounded-r-md">
             <Users size={16} className="self-center" /> Participants:{' '}
           </div>
           {selectedEvent?.participants &&
             selectedEvent.participants.length > 0 && (
-              <div className="flex flex-wrap flex-1 mt-2">
-                {selectedEvent.participants
-                  .filter((participant) => participant.user.id !== user?.id)
-                  .map((participant, index) => (
-                    <ParticipantChip
-                      username={participant.user.name}
-                      key={index}
-                      hideClearButton
-                      status={participant.status}
-                    />
-                  ))}
+              <div className="flex flex-wrap flex-1 mt-2 gap-2">
+                {selectedEvent.participants.map((participant, index) => (
+                  <ParticipantChip
+                    username={participant.user.name}
+                    key={index}
+                    hideClearButton
+                    status={participant.status}
+                  />
+                ))}
               </div>
             )}
         </div>
         <div
           className={`text-gray-700 ${eventDetailExpanded ? '' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
         >
-          <div className="inline-flex text-gray-500 font-medium items-baseline gap-1 px-2 border-l-4 border-gray-400 bg-gray-100 mr-2">
+          <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
             <ScanText size={16} className="self-center" /> Description:
           </div>
           {selectedEvent?.description}
@@ -169,11 +170,13 @@ function EventDetailPanel({
               participant.user.id === user?.id && !!participant.travelPlan,
           ) ? (
             <div className={`flex flex-col gap-2 pt-2`}>
-              <div>
-                <p className={`text-lg font-medium`}>
+              <div className={`pt-4`}>
+                <p
+                  className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
+                >
                   Carbon Emission Rates (kg CO₂e)
                 </p>
-                <p className={`text-sm italic text-gray-500`}>
+                <p className={`text-sm italic text-gray-500 mt-1`}>
                   This explains the Emissions of your Travel Plan and compare it
                   with other participants in average.
                 </p>
@@ -186,12 +189,14 @@ function EventDetailPanel({
                 xKey={'name'}
                 yKey={'value'}
               />
-              <Separator orientation={'horizontal'} />
+              <Separator orientation={'horizontal'} className={`my-4`} />
               <div>
-                <p className={`text-lg font-medium`}>
+                <p
+                  className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
+                >
                   Carbon Emission Contribution Ratio
                 </p>
-                <p className={`text-sm italic text-gray-500`}>
+                <p className={`text-sm italic text-gray-500 mt-2`}>
                   This explains the Emissions of your Travel Plan&#39;s
                   contribution to the Event.
                 </p>
