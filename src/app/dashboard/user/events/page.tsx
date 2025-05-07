@@ -11,8 +11,6 @@ import { TravelProvider } from '@/contexts/travel-context';
 import MapContainer from '@/components/userPage/maps/map.view';
 import EventsListPanel from '@/components/userPage/events-list-panel.view';
 import EventDetailPanel from '@/components/userPage/event-details-panel.view';
-import RoutesPanel from '@/components/userPage/maps/routes-panel.view';
-import { Label } from '@/components/ui/label';
 import OverviewTravelHistoryReport from '@/components/userPage/overview-travel-history-report.view';
 
 export default function UserEvents() {
