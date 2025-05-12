@@ -79,11 +79,20 @@ export default function UserDashboard() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
-      <div>
+      <div className={`border-primary border-2 p-2 rounded`}>
         <p>
           Hello{' '}
-          <a className="bg-gray-100 p-2 font-mono rounded">{user?.name}</a> !
+          <a className="bg-gray-200 px-2 py-1 font-mono rounded">
+            {user?.name}
+          </a>{' '}
+          !
         </p>
+      </div>
+      <div>
+        <p className="flex gap-2 text-3xl bold group relative w-max">
+          Overview
+        </p>
+        <Separator />
       </div>
       <div className="flex flex-col gap-8">
         <div className="flex flex-1 gap-4">
@@ -120,7 +129,7 @@ export default function UserDashboard() {
               </div>
               <TodayEventsVerticalStepper />
             </div>
-            <div className="flex flex-col w-1/4 min-w-96 h-full max-h-[80vh] bg-muted p-4 gap-4 rounded-xl">
+            <div className="flex flex-col w-1/4 min-w-96 h-full max-h-[80vh] bg-muted/30 p-4 gap-4 rounded-xl">
               <p className="text-3xl font-bold">Invitations</p>
               <PendingEvents
                 data={events}

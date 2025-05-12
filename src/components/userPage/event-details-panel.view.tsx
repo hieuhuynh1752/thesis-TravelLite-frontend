@@ -38,7 +38,7 @@ function EventDetailPanel({
 }: EventDetailPanelProps) {
   const { user, selectedEvent } = useUserContext();
   const router = useRouter();
-  const [eventDetailExpanded, setEventDetailExpanded] = React.useState(false);
+  const [eventDetailExpanded, setEventDetailExpanded] = React.useState(true);
 
   const handleToggleEventDetail = React.useCallback(() => {
     setEventDetailExpanded((prevState) => !prevState);

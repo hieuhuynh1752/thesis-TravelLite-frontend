@@ -1,7 +1,6 @@
 import {
   EventOccurrence,
   EventParticipantType,
-  EventType,
 } from '../../services/api/type.api';
 import {
   addDays,
@@ -21,6 +20,8 @@ export type TravelHistoryDataType = {
   co2?: number;
   date?: string;
   title?: string;
+  occurrence?: string;
+  location?: string;
   travelMode?: google.maps.TravelMode;
 };
 
@@ -35,7 +36,10 @@ export type ReducedTravelPreferencesDataType = {
   value: number;
 };
 
-export const getTravelHistoryData = (events: EventParticipantType[]) => {
+export const getTravelHistoryData = (
+  events: EventParticipantType[],
+  filterBy: { month?: string; year?: string } = {},
+) => {
   const recursedEvents: Map<EventOccurrence, TravelHistoryDataType[]> =
     new Map();
   let data: TravelHistoryDataType[] | undefined = events
@@ -45,6 +49,9 @@ export const getTravelHistoryData = (events: EventParticipantType[]) => {
         co2: eventWithTravelPlan.travelPlan?.totalCo2,
         date: eventWithTravelPlan.event.dateTime,
         title: eventWithTravelPlan.event.title,
+        location: eventWithTravelPlan.event.location.name,
+        occurrence: eventWithTravelPlan.event.occurrence,
+
         travelMode: eventWithTravelPlan.travelPlan?.travelMode,
       };
       if (eventWithTravelPlan.event.occurrence !== EventOccurrence.SINGLE) {
@@ -66,7 +73,7 @@ export const getTravelHistoryData = (events: EventParticipantType[]) => {
       return dataToRender;
     });
 
-  if (!!data) {
+  if (data) {
     const toBeAddedEntries: TravelHistoryDataType[] = [];
     for (const [key, value] of recursedEvents.entries()) {
       for (let i = 0; i < value.length; i++) {
@@ -128,13 +135,24 @@ export const getTravelHistoryData = (events: EventParticipantType[]) => {
       (itemA, itemB) =>
         new Date(itemA.date!).getTime() - new Date(itemB.date!).getTime(),
     );
+
+    // Apply filtering by month and/or year
+    data = data.filter((item) => {
+      const dateObj = parseISO(item.date!);
+      console.log(filterBy.month, format(dateObj, 'LLLL'));
+      const matchesMonth = filterBy.month
+        ? dateObj.getMonth() + 1 === parseInt(filterBy.month)
+        : true;
+      const matchesYear = filterBy.year
+        ? dateObj.getFullYear().toString() === filterBy.year
+        : true;
+      return matchesMonth && matchesYear;
+    });
+
     data = data.map((item) => {
       return {
         ...item,
-        date:
-          format(parseISO(item.date!), 'MMM') +
-          ' ' +
-          format(parseISO(item.date!), 'd'),
+        date: format(parseISO(item.date!), 'MMM d yyyy'),
       };
     });
   }

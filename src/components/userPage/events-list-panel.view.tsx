@@ -42,7 +42,7 @@ const EventsListPanel = ({ extended }: EventsListPanelProps) => {
 
   return (
     <div
-      className={`flex flex-col gap-4 ${extended ? 'w-1/4 h-full' : 'w-3/4'}`}
+      className={`flex flex-col gap-4 ${extended ? 'w-1/4 h-full' : 'w-1/2'}`}
     >
       <EventsListPanelItems extended={extended} />
     </div>

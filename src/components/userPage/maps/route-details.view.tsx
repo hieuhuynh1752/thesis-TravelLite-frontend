@@ -63,7 +63,7 @@ const RouteDetails = ({
       <div className={'flex gap-2 pr-2'}>
         <span
           className={
-            'font-medium text-gray-500 items-baseline gap-1 px-2 border-l-4 border-gray-400 bg-gray-100 w-14 mr-2 h-fit shrink-0'
+            'font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/30 w-14 mr-2 h-fit shrink-0'
           }
         >
           From{' '}
@@ -73,7 +73,7 @@ const RouteDetails = ({
       <div className={`flex gap-2 pr-2`}>
         <span
           className={
-            'font-medium text-gray-500 items-baseline gap-1 px-2 border-l-4 border-gray-400 bg-gray-100 w-14 mr-2 h-fit shrink-0'
+            'font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/30 w-14 mr-2 h-fit shrink-0'
           }
         >
           To{' '}
@@ -96,13 +96,13 @@ const RouteDetails = ({
         </div>
         <div
           className={
-            'flex flex-col bg-green-200 rounded-md px-4 text-right min-w-fit h-fit'
+            'flex flex-col bg-muted/50 rounded-md px-4 text-right min-w-fit h-fit'
           }
         >
-          <p className={'text-lg text-green-800 font-semibold'}>
+          <p className={'text-lg text-primary font-semibold'}>
             {travelPlan.totalCo2} kg <Leaf size={16} className={'inline'} />
           </p>
-          <p className={''}>est. CO2e</p>
+          <p className={'font-semibold'}>est. CO₂e</p>
         </div>
       </div>
       <Separator orientation={'horizontal'} />
@@ -118,11 +118,11 @@ const RouteDetails = ({
           <li
             key={index}
             className={`isolate relative flex-1 
-            ${index === 0 ? 'before:w-0' : 'before:w-0.5'} before:content-[''] before:h-[100%] before:bg-gray-400 before:inline-block before:absolute before:-top-0 before:left-4 lg:before:left-5
-            ${allSteps.length - 1 === index ? 'after:w-0 before:h-[50%]' : 'after:w-0.5'} after:content-[''] after:h-[50%]  after:bg-gray-400 after:inline-block after:absolute after:-bottom-4 after:left-4 lg:after:left-5 `}
+            ${index === 0 ? 'before:w-0' : 'before:w-0.5'} before:content-[''] before:h-[100%] before:bg-primary before:inline-block before:absolute before:-top-0 before:left-4 lg:before:left-5
+            ${allSteps.length - 1 === index ? 'after:w-0 before:h-[50%]' : 'after:w-0.5'} after:content-[''] after:h-[50%]  after:bg-primary after:inline-block after:absolute after:-bottom-4 after:left-4 lg:after:left-5 `}
           >
             <a className="flex items-start">
-              <span className="my-auto z-10 w-8 h-8 aspect-square border-gray-400 border-2 bg-white text-gray-600 rounded-full flex justify-center items-center mr-3 text-sm lg:w-10 lg:h-10">
+              <span className="my-auto z-10 w-8 h-8 aspect-square border-primary border-2 bg-white text-primary font-semibold rounded-full flex justify-center items-center mr-3 text-sm lg:w-10 lg:h-10">
                 {travelPlan.travelMode === google.maps.TravelMode.TRANSIT ? (
                   step.transit ? (
                     step.transit.vehicle === 'BUS' ? (
@@ -139,7 +139,7 @@ const RouteDetails = ({
                   <span>{index + 1}</span>
                 )}
               </span>
-              <div className="block shadow-none transition-shadow duration-300 hover:shadow-md cursor-default hover:shadow-gray-400 p-4 rounded-xl min-w-[50%] max-w-[80%] w-full border-gray-300 border-2">
+              <div className="block shadow-none transition-shadow duration-300 hover:shadow-md cursor-default hover:shadow-gray-400 p-4 rounded-xl min-w-[50%] max-w-[80%] w-full border-primary font-medium border-2">
                 <div className="text-sm">{step.instructions}</div>
                 {step.transit && (
                   <div className="text-sm pt-2 flex flex-col gap-2 ">

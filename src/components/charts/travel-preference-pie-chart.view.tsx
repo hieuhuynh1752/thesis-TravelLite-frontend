@@ -21,10 +21,12 @@ const TravelPreferencesHistoryChart = ({
   totalCo2,
 }: TravelPreferencesChartProps) => {
   return (
-    <Card className="p-4 pb-0 w-full h-full">
+    <Card className="w-full h-full border-none shadow-none">
       <CardContent className="p-0">
         <div>
-          <p className="text-xl font-semibold mb-4">Travel Preferences</p>
+          <p className="text-xl font-semibold px-2 border-l-4 border-primary text-primary bg-muted/30 rounded-r mb-4">
+            Travel Preferences
+          </p>
         </div>
         <div className={'flex'}>
           <ChartContainer config={{}} className={'pb-2 min-h-[250px] w-1/2'}>
@@ -52,11 +54,9 @@ const TravelPreferencesHistoryChart = ({
           </ChartContainer>
           <div className="w-3/4">
             <div
-              className={
-                'flex flex-col gap-2 border-2 border-green-500 rounded'
-              }
+              className={'flex flex-col gap-2 border-2 border-primary rounded'}
             >
-              <p className="text-md font-semibold bg-green-100 p-2">So far:</p>
+              <p className="text-md font-semibold bg-muted/30 p-2">So far:</p>
               <ul className={'list-disc ml-6 p-2 pt-0'}>
                 <li>
                   You have made:{' '}
@@ -68,7 +68,7 @@ const TravelPreferencesHistoryChart = ({
                 <li>
                   With a total of:{' '}
                   <span
-                    className={'font-semibold text-green-900 bg-green-100 px-2'}
+                    className={'font-semibold text-primary bg-muted/30 px-2'}
                   >
                     {totalCo2} kg CO₂e <Leaf className="inline" size={16} />
                   </span>{' '}

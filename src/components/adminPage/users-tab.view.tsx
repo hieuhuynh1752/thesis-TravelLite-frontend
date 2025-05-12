@@ -1,8 +1,8 @@
 'use client';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { usersColumns } from './columns.view';
-import { DataTable } from '@/components/adminPage/data-table.view';
+import { usersColumns } from '../ui/table/columns.view';
+import { DataTable } from '@/components/ui/table/data-table.view';
 
 import EditUserModal from '@/components/adminPage/user-modals/edit-user-modal.view';
 import DeleteUserModal from '@/components/adminPage/user-modals/delete-user-modal.view';

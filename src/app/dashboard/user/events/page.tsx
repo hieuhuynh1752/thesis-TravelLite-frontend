@@ -12,12 +12,14 @@ import MapContainer from '@/components/userPage/maps/map.view';
 import EventsListPanel from '@/components/userPage/events-list-panel.view';
 import EventDetailPanel from '@/components/userPage/event-details-panel.view';
 import OverviewTravelHistoryReport from '@/components/userPage/overview-travel-history-report.view';
+import { useUserContext } from '@/contexts/user-context';
 
 export default function UserEvents() {
+  const { events } = useUserContext();
   const [googleMaps, setGoogleMaps] = React.useState<
     typeof google.maps | undefined
   >(undefined);
-  const [selectedTab, setSelectedTab] = React.useState<string>('overview');
+  const [selectedTab, setSelectedTab] = React.useState<string>('all_events');
 
   const onSelectedTabChange = React.useCallback((tab: string) => {
     setSelectedTab(tab);
@@ -48,20 +50,20 @@ export default function UserEvents() {
           <TravelProvider>
             <div className="flex p-4 pt-2 pb-0 border-b-2 border-muted gap-2">
               <div
-                className={`py-1 px-4 rounded-t-sm bg-gray-50 hover:bg-muted/20 hover:text-primary cursor-pointer ${selectedTab === 'overview' ? 'text-primary font-semibold bg-muted/50 hover:bg-muted/30' : ''}`}
-                onClick={() => onSelectedTabChange('overview')}
-              >
-                Overview
-              </div>
-              <div
-                className={`py-1 px-4 rounded-t-sm bg-gray-50 hover:bg-muted/20 hover:text-primary cursor-pointer ${selectedTab === 'all_events' ? ' text-primary font-semibold bg-muted/50 hover:bg-muted/30' : ''}`}
+                className={`py-1 px-4 rounded-t-sm font-semibold text-gray-500 bg-gray-50 hover:bg-muted/20 hover:text-primary cursor-pointer ${selectedTab === 'all_events' ? ' text-primary font-semibold bg-muted/50 hover:bg-muted/30' : ''}`}
                 onClick={() => onSelectedTabChange('all_events')}
               >
                 All Events
               </div>
+              <div
+                className={`py-1 px-4 rounded-t-sm  font-semibold text-gray-500 bg-gray-50 hover:bg-muted/20 hover:text-primary cursor-pointer ${selectedTab === 'reports' ? 'text-primary font-semibold bg-muted/50 hover:bg-muted/30' : ''}`}
+                onClick={() => onSelectedTabChange('reports')}
+              >
+                Reports
+              </div>
             </div>
-            {selectedTab === 'overview' ? (
-              <OverviewTravelHistoryReport />
+            {selectedTab === 'reports' ? (
+              <OverviewTravelHistoryReport events={events} />
             ) : (
               <div className="flex flex-1 gap-2 pt-4">
                 <EventsListPanel extended />
