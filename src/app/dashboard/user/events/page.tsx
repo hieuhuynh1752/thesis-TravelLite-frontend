@@ -10,7 +10,7 @@ import { GoogleMapsContext } from '@/contexts/google-maps-context';
 import { TravelProvider } from '@/contexts/travel-context';
 import MapContainer from '@/components/userPage/maps/map.view';
 import EventsListPanel from '@/components/userPage/events-list-panel.view';
-import EventDetailPanel from '@/components/userPage/event-details-panel.view';
+import EventDetailsPanel from '@/components/userPage/event-details-panel.view';
 import OverviewTravelHistoryReport from '@/components/userPage/overview-travel-history-report.view';
 import { useUserContext } from '@/contexts/user-context';
 
@@ -76,7 +76,7 @@ export default function UserEvents() {
                   </div>
                   <div className="flex">
                     <Separator orientation="vertical" />
-                    <EventDetailPanel extended />
+                    <EventDetailsPanel extended />
                   </div>
                 </div>
               </div>

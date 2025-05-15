@@ -1,15 +1,22 @@
 'use client';
 
 import * as React from 'react';
-import { Home, Calendar, Telescope, NotepadText } from 'lucide-react';
+import {
+  Calendar,
+  ChartNoAxesCombined,
+  Home,
+  NotepadText,
+  Telescope,
+} from 'lucide-react';
 
 import { NavMain } from '@/components/nav-main';
 import { Sidebar, SidebarHeader } from '@/components/ui/sidebar';
 import { NavUser } from '@/components/nav-user';
 import { useUserContext } from '@/contexts/user-context';
+import { UserRole } from '../../services/api/type.api';
 
 const routes = {
-  navMain: [
+  navUserMain: [
     {
       title: 'Home',
       url: '/dashboard/user',
@@ -31,6 +38,18 @@ const routes = {
       icon: Telescope,
     },
   ],
+  navAdminMain: [
+    {
+      title: 'Home',
+      url: '/dashboard/admin',
+      icon: Home,
+    },
+    {
+      title: 'Reports',
+      url: '/dashboard/admin/reports',
+      icon: ChartNoAxesCombined,
+    },
+  ],
 };
 
 export function SidebarLeft({
@@ -43,7 +62,13 @@ export function SidebarLeft({
         {user && user.name && user.email && (
           <NavUser user={{ name: user.name, email: user.email }} />
         )}
-        <NavMain items={routes.navMain} />
+        <NavMain
+          items={
+            user?.role === UserRole.ADMIN
+              ? routes.navAdminMain
+              : routes.navUserMain
+          }
+        />
       </SidebarHeader>
     </Sidebar>
   );

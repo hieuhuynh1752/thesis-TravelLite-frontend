@@ -1,6 +1,7 @@
 import {
   EventOccurrence,
   EventParticipantType,
+  UserType,
 } from '../../services/api/type.api';
 import {
   addDays,
@@ -23,6 +24,7 @@ export type TravelHistoryDataType = {
   occurrence?: string;
   location?: string;
   travelMode?: google.maps.TravelMode;
+  user?: UserType;
 };
 
 export type ReducedTravelHistoryDataType = {
@@ -51,6 +53,7 @@ export const getTravelHistoryData = (
         title: eventWithTravelPlan.event.title,
         location: eventWithTravelPlan.event.location.name,
         occurrence: eventWithTravelPlan.event.occurrence,
+        user: eventWithTravelPlan.user,
 
         travelMode: eventWithTravelPlan.travelPlan?.travelMode,
       };
@@ -139,7 +142,6 @@ export const getTravelHistoryData = (
     // Apply filtering by month and/or year
     data = data.filter((item) => {
       const dateObj = parseISO(item.date!);
-      console.log(filterBy.month, format(dateObj, 'LLLL'));
       const matchesMonth = filterBy.month
         ? dateObj.getMonth() + 1 === parseInt(filterBy.month)
         : true;
@@ -223,7 +225,6 @@ export const calculatePersonalEmissionRateOnEvent = (
     (participant) =>
       (totalCo2OfAllParticipants += participant.travelPlan?.totalCo2 ?? 0),
   );
-  console.log(data.length);
   output.push({
     name: 'Average',
     value: totalCo2OfAllParticipants / data.length,
@@ -253,4 +254,33 @@ export const calculatePersonalEmissionPercentageOnEvent = (
     value: totalCo2OfAllParticipants,
   });
   return output;
+};
+
+export const calculateParticipantsEmissionRateOnEvent = (
+  data: EventParticipantType[],
+): { name: string; value: number }[] => {
+  const output = data.map((participant) => {
+    return {
+      name: participant.user.name ?? '',
+      value: participant.travelPlan?.totalCo2 ?? 0,
+    };
+  });
+  return output;
+};
+
+export const calculateParticipantsTravelModePreferencesOnEvent = (
+  data: EventParticipantType[],
+) => {
+  const travelModeCounts: Record<string, number> = {};
+  data.forEach(({ travelPlan }) => {
+    if (travelPlan && travelPlan.travelMode) {
+      travelModeCounts[travelPlan.travelMode] =
+        (travelModeCounts[travelPlan.travelMode] || 0) + 1;
+    }
+  });
+  const travelModeData = Object.keys(travelModeCounts).map((mode) => ({
+    name: mode.charAt(0) + String(mode).slice(1).toLowerCase(),
+    value: travelModeCounts[mode],
+  }));
+  return travelModeData;
 };

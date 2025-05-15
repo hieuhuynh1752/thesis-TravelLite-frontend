@@ -42,6 +42,9 @@ export default function HeaderWrapper({
         if (breadcrumbs[3] === 'travelPlans') {
           return 'Travel Plans';
         }
+        if (breadcrumbs[3] === 'reports') {
+          return 'Reports';
+        }
       } else return 'Home';
     } else return breadcrumbs[1];
   }, [pathName]);

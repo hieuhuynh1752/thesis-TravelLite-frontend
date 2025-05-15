@@ -26,9 +26,15 @@ import { useTravelContext } from '@/contexts/travel-context';
 
 interface EventsListPanelItemsProps {
   extended?: boolean;
+  adminMode?: {
+    allEvents: EventType[];
+  };
 }
 
-const EventsListPanelItems = ({ extended }: EventsListPanelItemsProps) => {
+const EventsListPanelItems = ({
+  extended,
+  adminMode,
+}: EventsListPanelItemsProps) => {
   const [eventsList, setEventsList] =
     React.useState<Map<string, EventType[]>>();
   const [showPassedEvent, setShowPassedEvent] = React.useState(false);
@@ -37,10 +43,19 @@ const EventsListPanelItems = ({ extended }: EventsListPanelItemsProps) => {
 
   const handleEvents = React.useCallback(
     (showAll?: boolean) => {
-      if (events) {
-        const participatedEvents = events
-          .filter((event) => event.status === EventParticipantStatus.ACCEPTED)
-          .map((p) => p.event);
+      console.log(eventsList?.size);
+      if (
+        events ||
+        (adminMode?.allEvents &&
+          (!eventsList || adminMode.allEvents.length !== eventsList.size))
+      ) {
+        const participatedEvents = adminMode
+          ? adminMode.allEvents
+          : events!
+              .filter(
+                (event) => event.status === EventParticipantStatus.ACCEPTED,
+              )
+              .map((p) => p.event);
         const filteredEvents = extended
           ? participatedEvents
           : participatedEvents.filter(
@@ -102,6 +117,7 @@ const EventsListPanelItems = ({ extended }: EventsListPanelItemsProps) => {
           }
         }
         setEventsList(upcomingEventsMap);
+        console.log(upcomingEventsMap);
 
         if (showAll === undefined) {
           const item = upcomingEventsMap.entries().next().value;
@@ -113,7 +129,7 @@ const EventsListPanelItems = ({ extended }: EventsListPanelItemsProps) => {
         }
       }
     },
-    [events, extended, setSelectedEvent],
+    [adminMode, events, eventsList, extended, setSelectedEvent],
   );
 
   const handleSelectEvent = React.useCallback(
@@ -123,6 +139,7 @@ const EventsListPanelItems = ({ extended }: EventsListPanelItemsProps) => {
           resetAllTravelLogs();
         }
         setSelectedEvent?.(newSelectedEvent);
+        console.log(newSelectedEvent);
       }
     },
     [resetAllTravelLogs, setSelectedEvent, selectedEvent, extended],

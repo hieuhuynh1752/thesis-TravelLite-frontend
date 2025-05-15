@@ -10,7 +10,7 @@ import { GoogleMapsContext } from '@/contexts/google-maps-context';
 import { TravelProvider } from '@/contexts/travel-context';
 import MapContainer from '@/components/userPage/maps/map.view';
 import EventsListPanel from '@/components/userPage/events-list-panel.view';
-import EventDetailPanel from '@/components/userPage/event-details-panel.view';
+import EventDetailsPanel from '@/components/userPage/event-details-panel.view';
 import RoutesPanel from '@/components/userPage/maps/routes-panel.view';
 
 export default function UserEvents() {
@@ -54,7 +54,7 @@ export default function UserEvents() {
                 <div className="max-h-[50vh] flex">
                   <EventsListPanel />
                   <Separator orientation="vertical" />
-                  <EventDetailPanel
+                  <EventDetailsPanel
                     isRoutesPanelVisible={showRoutePanel}
                     toggleRoutesPanel={toggleShowRoutePanel}
                   />

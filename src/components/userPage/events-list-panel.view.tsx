@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { useUserContext } from '@/contexts/user-context';
 import Cookie from 'js-cookie';
-import { UserRole } from '../../../services/api/type.api';
+import { EventType, UserRole } from '../../../services/api/type.api';
 import { redirect } from 'next/navigation';
 import { getMe } from '../../../services/api/auth.api';
 import { getUserById } from '../../../services/api/user.api';
@@ -10,9 +10,12 @@ import EventsListPanelItems from '@/components/userPage/events-list-panel-items.
 
 interface EventsListPanelProps {
   extended?: boolean;
+  adminMode?: {
+    allEvents: EventType[];
+  };
 }
 
-const EventsListPanel = ({ extended }: EventsListPanelProps) => {
+const EventsListPanel = ({ extended, adminMode }: EventsListPanelProps) => {
   const { setUser, setEvents } = useUserContext();
   const [userId, setUserId] = React.useState<number | undefined>();
 
@@ -31,20 +34,22 @@ const EventsListPanel = ({ extended }: EventsListPanelProps) => {
   }, [userId, setUser, setEvents]);
 
   React.useEffect(() => {
-    const role = Cookie.get('role');
-    if (role !== UserRole.USER) {
-      redirect('/dashboard');
-    } else {
-      getMe().then((userId) => setUserId(userId));
-      handleGetUserData();
+    if (!adminMode) {
+      const role = Cookie.get('role');
+      if (role !== UserRole.USER) {
+        redirect('/dashboard');
+      } else {
+        getMe().then((userId) => setUserId(userId));
+        handleGetUserData();
+      }
     }
-  }, [handleGetUserData]);
+  }, [handleGetUserData, adminMode]);
 
   return (
     <div
       className={`flex flex-col gap-4 ${extended ? 'w-1/4 h-full' : 'w-1/2'}`}
     >
-      <EventsListPanelItems extended={extended} />
+      <EventsListPanelItems extended={extended} adminMode={adminMode} />
     </div>
   );
 };

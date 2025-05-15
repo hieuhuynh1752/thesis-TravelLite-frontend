@@ -17,3 +17,8 @@ export const participantSubscribeToEvent = async (data: {
   const response = await api.post(`participants`, data);
   return response.data;
 };
+
+export const getAllEventParticipants = async () => {
+  const response = await api.get('/participants');
+  return response.data;
+};

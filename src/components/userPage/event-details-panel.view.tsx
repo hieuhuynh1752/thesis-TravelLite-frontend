@@ -9,6 +9,7 @@ import {
   ChevronsRight,
   ChevronsUp,
   Clock,
+  Leaf,
   MapPin,
   ScanText,
   UserCog,
@@ -20,22 +21,27 @@ import CreateOrUpdateEventDialog from '@/components/userPage/create-event-dialog
 import { useRouter } from 'next/navigation';
 import { HorizontalBarChart } from '@/components/ui/charts/horizontal-bar-chart';
 import {
+  calculateParticipantsEmissionRateOnEvent,
+  calculateParticipantsTravelModePreferencesOnEvent,
   calculatePersonalEmissionPercentageOnEvent,
   calculatePersonalEmissionRateOnEvent,
 } from '@/utils/charts-util';
 import { PercentagePieChart } from '@/components/ui/charts/percentage-pie-chart';
+import { DataTable } from '@/components/ui/table/data-table.view';
 
-interface EventDetailPanelProps {
+interface EventDetailsPanelProps {
   isRoutesPanelVisible?: boolean;
   toggleRoutesPanel?(): void;
   extended?: boolean;
+  adminMode?: boolean;
 }
 
-function EventDetailPanel({
+function EventDetailsPanel({
   isRoutesPanelVisible,
   toggleRoutesPanel,
   extended,
-}: EventDetailPanelProps) {
+  adminMode,
+}: EventDetailsPanelProps) {
   const { user, selectedEvent } = useUserContext();
   const router = useRouter();
   const [eventDetailExpanded, setEventDetailExpanded] = React.useState(true);
@@ -92,12 +98,21 @@ function EventDetailPanel({
         <div className={`text-gray-700`}>
           <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
             <Clock size={16} className="self-center" />
-            {'At: '}
+            {'Date & Time: '}
           </div>
           {selectedEvent
-            ? format(parseISO(selectedEvent.dateTime!), 'hh:mm a')
+            ? format(parseISO(selectedEvent.dateTime!), 'MMMM dd yyyy, hh:mm a')
             : ''}
         </div>
+        {extended && (
+          <div className={`text-gray-700`}>
+            <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
+              <MapPin size={16} className="self-center" />
+              {'At: '}
+            </div>
+            {selectedEvent ? selectedEvent.location.address : ''}
+          </div>
+        )}
         <div
           className={`text-gray-700 ${eventDetailExpanded || extended ? '' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
         >
@@ -162,13 +177,128 @@ function EventDetailPanel({
       {extended && (
         <div className={`pt-4`}>
           <div>
-            <p className={`text-xl font-bold`}>Travel Plan Metrics</p>
+            <p className={`text-xl font-bold`}>
+              {adminMode ? 'Travel Plans Metrics' : 'Travel Plan Metrics'}
+            </p>
             <Separator orientation={'horizontal'} />
           </div>
-          {selectedEvent?.participants.find(
-            (participant) =>
-              participant.user.id === user?.id && !!participant.travelPlan,
-          ) ? (
+          {adminMode && selectedEvent?.participants ? (
+            <div className={`flex flex-col gap-2 pt-2`}>
+              <div className={`flex gap-4 w-full`}>
+                <div className={`w-1/2`}>
+                  <div>
+                    <p
+                      className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
+                    >
+                      Carbon Emission Rates (kg CO₂e)
+                    </p>
+                    <p className={`text-sm italic text-gray-500 mt-1`}>
+                      This explains the Emissions of each participant&#39;s
+                      Travel Plan for this Event.
+                    </p>
+                  </div>
+                  <div className={`pl-4`}>
+                    <PercentagePieChart
+                      data={calculateParticipantsEmissionRateOnEvent(
+                        selectedEvent!.participants,
+                      )}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <p
+                      className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
+                    >
+                      Travel Modes Ratio
+                    </p>
+                    <p className={`text-sm italic text-gray-500 mt-1`}>
+                      This explains the Travel Modes of Paticipant&#39;s
+                      declared to this Event.
+                    </p>
+                  </div>
+                  <PercentagePieChart
+                    data={calculateParticipantsTravelModePreferencesOnEvent(
+                      selectedEvent?.participants,
+                    )}
+                  />
+                </div>
+              </div>
+              <Separator orientation={'horizontal'} className={``} />
+              <div className={`flex flex-col gap-4`}>
+                <div>
+                  <p
+                    className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
+                  >
+                    Participants List
+                  </p>
+                  <p className={`text-sm italic text-gray-500 mt-1`}>
+                    This describes the Participants and their Travel Plans
+                    information declared to this Event.
+                  </p>
+                </div>
+                <div className="h-[80vh] overflow-y-auto">
+                  {selectedEvent.participants && (
+                    <DataTable
+                      columns={[
+                        {
+                          id: 'name',
+                          header: 'Name',
+                          cell: ({ row }) => {
+                            return row.original.user.name;
+                          },
+                        },
+                        {
+                          id: 'email',
+                          header: 'Email',
+                          cell: ({ row }) => {
+                            return row.original.user.email;
+                          },
+                        },
+                        {
+                          id: 'totalCo2',
+                          header: 'Total CO₂e (kg)',
+                          cell: ({ row }) => {
+                            return (
+                              row.original.travelPlan?.totalCo2 ?? (
+                                <span className={`italic text-gray-500`}>
+                                  Undeclared
+                                </span>
+                              )
+                            );
+                          },
+                        },
+                      ]}
+                      data={selectedEvent.participants}
+                      footer={
+                        <div className="flex justify-end items-center gap-2">
+                          Total:{' '}
+                          <span
+                            className={`px-4 text-primary rounded border border-primary bg-muted/30`}
+                          >
+                            {selectedEvent.participants.reduce(
+                              (acc, participant) => {
+                                const co2 = participant.travelPlan?.totalCo2;
+                                return typeof co2 === 'number'
+                                  ? acc + co2
+                                  : acc;
+                              },
+                              0,
+                            )}{' '}
+                            kg CO₂e
+                            <Leaf className={`inline ml-2`} size={16} />
+                          </span>
+                        </div>
+                      }
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : selectedEvent?.participants.find(
+              (participant) =>
+                participant.user.id === user?.id && !!participant.travelPlan,
+            ) ? (
             <div className={`flex flex-col gap-2 pt-2`}>
               <div className={`pt-4`}>
                 <p
@@ -256,4 +386,4 @@ function EventDetailPanel({
   );
 }
 
-export default EventDetailPanel;
+export default EventDetailsPanel;

@@ -11,6 +11,7 @@ export interface TravelPreferencesChartProps {
   chartData?: ReducedTravelPreferencesDataType[];
   totalTravels?: number;
   totalCo2?: string;
+  adminMode?: boolean;
 }
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff6b6b', '#6b5b95'];
@@ -19,6 +20,7 @@ const TravelPreferencesHistoryChart = ({
   chartData,
   totalTravels,
   totalCo2,
+  adminMode,
 }: TravelPreferencesChartProps) => {
   return (
     <Card className="w-full h-full border-none shadow-none">
@@ -58,21 +60,47 @@ const TravelPreferencesHistoryChart = ({
             >
               <p className="text-md font-semibold bg-muted/30 p-2">So far:</p>
               <ul className={'list-disc ml-6 p-2 pt-0'}>
-                <li>
-                  You have made:{' '}
-                  <span className="bg-amber-100 px-2">
-                    <span className={'font-semibold'}>{totalTravels}</span>{' '}
-                    travels
-                  </span>
-                </li>
-                <li>
-                  With a total of:{' '}
-                  <span
-                    className={'font-semibold text-primary bg-muted/30 px-2'}
-                  >
-                    {totalCo2} kg CO₂e <Leaf className="inline" size={16} />
-                  </span>{' '}
-                </li>
+                {adminMode ? (
+                  <>
+                    <li>
+                      You have made:{' '}
+                      <span className="bg-amber-100 px-2">
+                        <span className={'font-semibold'}>{totalTravels}</span>{' '}
+                        travels
+                      </span>
+                    </li>
+                    <li>
+                      With a total of:{' '}
+                      <span
+                        className={
+                          'font-semibold text-primary bg-muted/30 px-2'
+                        }
+                      >
+                        {totalCo2} kg CO₂e <Leaf className="inline" size={16} />
+                      </span>{' '}
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <span className="bg-amber-100 px-2">
+                        <span className={'font-semibold'}>{totalTravels}</span>{' '}
+                        travels
+                      </span>{' '}
+                      has been made!
+                    </li>
+                    <li>
+                      With a total of:{' '}
+                      <span
+                        className={
+                          'font-semibold text-primary bg-muted/30 px-2'
+                        }
+                      >
+                        {totalCo2} kg CO₂e <Leaf className="inline" size={16} />
+                      </span>{' '}
+                    </li>
+                  </>
+                )}
               </ul>
             </div>
           </div>

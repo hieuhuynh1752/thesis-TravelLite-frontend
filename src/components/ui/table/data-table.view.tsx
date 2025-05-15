@@ -13,16 +13,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableFooter,
 } from '@/components/ui/table';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  footer?: React.ReactNode;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  footer,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -31,9 +34,9 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader className="bg-gray-100">
+    <div className="rounded-md border overflow-hidden">
+      <Table className=" w-full">
+        <TableHeader className=" bg-gray-100">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
@@ -73,6 +76,13 @@ export function DataTable<TData, TValue>({
             </TableRow>
           )}
         </TableBody>
+        {footer && (
+          <TableFooter className="sticky bottom-0 bg-gray-50 shadow-md z-10">
+            <TableRow>
+              <TableCell colSpan={columns.length}>{footer}</TableCell>
+            </TableRow>
+          </TableFooter>
+        )}
       </Table>
     </div>
   );

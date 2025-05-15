@@ -17,11 +17,10 @@ export default function UserTabContent({
   handleReload?(): void;
 }) {
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-4 items-center">
-        <CreateUserModal onClose={handleReload} />
-        <span>Or</span>
+    <div className="flex flex-col gap-4 p-4">
+      <div className="flex gap-4 items-center self-end">
         <Button variant={'outline'}>Upload CSV...</Button>
+        <CreateUserModal onClose={handleReload} />
       </div>
       <DataTable
         columns={[

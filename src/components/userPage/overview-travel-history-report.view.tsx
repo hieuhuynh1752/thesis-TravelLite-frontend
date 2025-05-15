@@ -15,18 +15,22 @@ import {
   flattenTravelHistoryChartData,
   flattenTravelPreferencesHistoryChartData,
   getTravelHistoryData,
+  TravelHistoryDataType,
 } from '@/utils/charts-util';
 import TravelHistoryChart from '@/components/charts/travel-history-chart.view';
 import TravelPreferencesHistoryChart from '@/components/charts/travel-preference-pie-chart.view';
 import { DataTable } from '@/components/ui/table/data-table.view';
 import { format } from 'date-fns';
+import { ColumnDef } from '@tanstack/react-table';
 
 export interface OverviewTravelHistoryReportProps {
   events?: EventParticipantType[];
+  adminMode?: boolean;
 }
 
 export default function OverviewTravelHistoryReport({
   events,
+  adminMode,
 }: OverviewTravelHistoryReportProps) {
   const [reportType, setReportType] = React.useState('lifetime');
   const [selectedMonth, setSelectedMonth] = React.useState<
@@ -56,6 +60,62 @@ export default function OverviewTravelHistoryReport({
       return flattenTravelPreferencesHistoryChartData(travelHistoryData);
     }
   }, [travelHistoryData]);
+
+  const tableColumns = React.useMemo((): ColumnDef<
+    TravelHistoryDataType,
+    unknown
+  >[] => {
+    const baseColumns: ColumnDef<TravelHistoryDataType, unknown>[] = [
+      {
+        id: 'title',
+        header: 'Event Title',
+        cell: ({ row }) => {
+          return row.original.title;
+        },
+      },
+      {
+        id: 'date',
+        header: 'Date',
+        cell: ({ row }) => {
+          return row.original.date
+            ? format(row.original.date, 'dd MMMM, yyyy')
+            : 'Unavailable';
+        },
+        meta: { minWidth: 200 },
+      },
+      {
+        id: 'location',
+        header: 'Location',
+        cell: ({ row }) => {
+          return row.original.location;
+        },
+      },
+      {
+        id: 'occurrence',
+        header: 'Occurrence',
+        cell: ({ row }) => {
+          return row.original.occurrence?.toLowerCase();
+        },
+      },
+      {
+        id: 'kg CO₂e',
+        header: 'kg CO₂e',
+        cell: ({ row }) => {
+          return row.original.co2;
+        },
+      },
+    ];
+    if (adminMode) {
+      baseColumns.unshift({
+        id: 'name',
+        header: 'Full name',
+        cell: ({ row }) => {
+          return row.original.user?.name;
+        },
+      });
+    }
+    return baseColumns;
+  }, [adminMode]);
 
   const handleReportTypeChange = React.useCallback((type: string) => {
     setReportType(type);
@@ -162,52 +222,11 @@ export default function OverviewTravelHistoryReport({
           <p
             className={`text-xl font-semibold px-2 border-l-4 border-primary text-primary bg-muted/30 rounded-r`}
           >
-            Events Participated
+            {adminMode ? 'Events Participation List' : 'Events Participated'}
           </p>
           {travelHistoryData ? (
             <div className="h-[80vh] overflow-y-auto">
-              <DataTable
-                columns={[
-                  {
-                    id: 'title',
-                    header: 'Title',
-                    cell: ({ row }) => {
-                      return row.original.title;
-                    },
-                  },
-                  {
-                    id: 'date',
-                    header: 'Date',
-                    cell: ({ row }) => {
-                      return row.original.date
-                        ? format(row.original.date, 'dd MMMM, yyyy')
-                        : 'Unavailable';
-                    },
-                  },
-                  {
-                    id: 'location',
-                    header: 'Location',
-                    cell: ({ row }) => {
-                      return row.original.location;
-                    },
-                  },
-                  {
-                    id: 'occurrence',
-                    header: 'Occurrence',
-                    cell: ({ row }) => {
-                      return row.original.occurrence?.toLowerCase();
-                    },
-                  },
-                  {
-                    id: 'kg CO₂e',
-                    header: 'kg CO₂e',
-                    cell: ({ row }) => {
-                      return row.original.co2;
-                    },
-                  },
-                ]}
-                data={travelHistoryData}
-              />
+              <DataTable columns={tableColumns} data={travelHistoryData} />
             </div>
           ) : (
             <p>
