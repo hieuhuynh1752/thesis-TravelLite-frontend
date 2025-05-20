@@ -5,6 +5,7 @@ import register_landing from '../../img/register_landing.svg';
 import { RegisterForm } from '@/components/register-form';
 import Link from 'next/link';
 import logo_travellite from '@/img/logo_travellite.png';
+import * as React from 'react';
 
 export default function RegisterPage() {
   return (
@@ -27,7 +28,9 @@ export default function RegisterPage() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
-            <RegisterForm />
+            <React.Suspense>
+              <RegisterForm />
+            </React.Suspense>
           </div>
         </div>
       </div>

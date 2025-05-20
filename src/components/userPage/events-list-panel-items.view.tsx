@@ -115,6 +115,7 @@ const EventsListPanelItems = ({
         console.log('here');
         const first = upcomingEventsMap.entries().next().value;
         if (first) {
+          /* eslint-disable  @typescript-eslint/no-unused-vars */
           const [day, items] = first;
           setSelectedEvent?.(items[0]);
         }

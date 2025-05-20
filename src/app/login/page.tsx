@@ -5,6 +5,7 @@ import Image from 'next/image';
 import login_landing from '../../img/login_landing.svg';
 import logo_travellite from '../../img/logo_travellite.png';
 import Link from 'next/link';
+import * as React from 'react';
 
 export default function LoginPage() {
   return (
@@ -27,7 +28,9 @@ export default function LoginPage() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
-            <LoginForm />
+            <React.Suspense>
+              <LoginForm />
+            </React.Suspense>
           </div>
         </div>
       </div>

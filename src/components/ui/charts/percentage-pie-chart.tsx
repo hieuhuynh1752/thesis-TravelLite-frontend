@@ -8,6 +8,7 @@ export type PercentagePieChartProps<T> = {
   data: T[];
 };
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 export function PercentagePieChart<T extends Record<string, any>>({
   data,
 }: PercentagePieChartProps<T>) {
