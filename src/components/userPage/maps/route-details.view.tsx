@@ -153,7 +153,7 @@ const RouteDetails = ({
                                 color: '#fff',
                                 fontWeight: 800,
                               }
-                            : { border: '2px solid black' }
+                            : { border: '2px solid #2E7D32' }
                         }
                         className="px-1 rounded rounded-r-none h-full inline-block"
                       >
@@ -169,9 +169,9 @@ const RouteDetails = ({
                             ? {
                                 borderColor: step.transit.lineColor,
                               }
-                            : { borderColor: 'black' }
+                            : { borderColor: '#2E7D32' }
                         }
-                        className="px-1 rounded rounded-l-none border-2"
+                        className="px-1 rounded rounded-l-none border-2 h-full inline-block"
                       >
                         {step.transit.lineShortName ?? step.transit.line}
                       </span>

@@ -2,7 +2,6 @@
 import * as React from 'react';
 import {
   format,
-  getHours,
   isFuture,
   isPast,
   isToday,
@@ -23,12 +22,11 @@ import { CheckedState } from '@radix-ui/react-checkbox';
 import { Separator } from '@/components/ui/separator';
 import { useUserContext } from '@/contexts/user-context';
 import { useTravelContext } from '@/contexts/travel-context';
+import { getNextOccurrenceDate } from '@/utils/events-util';
 
 interface EventsListPanelItemsProps {
   extended?: boolean;
-  adminMode?: {
-    allEvents: EventType[];
-  };
+  adminMode?: boolean;
 }
 
 const EventsListPanelItems = ({
@@ -38,98 +36,91 @@ const EventsListPanelItems = ({
   const [eventsList, setEventsList] =
     React.useState<Map<string, EventType[]>>();
   const [showPassedEvent, setShowPassedEvent] = React.useState(false);
-  const { events, selectedEvent, setSelectedEvent } = useUserContext();
+  const {
+    eventsAsParticipantList,
+    allEvents,
+    selectedEvent,
+    setSelectedEvent,
+  } = useUserContext();
   const { resetAllTravelLogs } = useTravelContext();
 
   const handleEvents = React.useCallback(
     (showAll?: boolean) => {
-      console.log(eventsList?.size);
-      if (
-        events ||
-        (adminMode?.allEvents &&
-          (!eventsList || adminMode.allEvents.length !== eventsList.size))
-      ) {
-        const participatedEvents = adminMode
-          ? adminMode.allEvents
-          : events!
-              .filter(
-                (event) => event.status === EventParticipantStatus.ACCEPTED,
-              )
-              .map((p) => p.event);
-        const filteredEvents = extended
-          ? participatedEvents
-          : participatedEvents.filter(
-              (event) =>
-                isToday(event.dateTime) ||
-                isFuture(event.dateTime) ||
-                event.occurrence === EventOccurrence.DAILY,
-            );
-        let sortedEvents = filteredEvents.sort((a, b) => {
-          if (extended) {
-            return (
-              new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()
-            );
-          }
-          return (
-            new Date(
-              a.occurrence === EventOccurrence.DAILY ? '' : a.dateTime,
-            ).getTime() -
-            new Date(
-              b.occurrence === EventOccurrence.DAILY ? '' : b.dateTime,
-            ).getTime()
-          );
-        });
+      console.log(allEvents);
+      if ((!adminMode && !eventsAsParticipantList) || (adminMode && !allEvents))
+        return;
+      console.log(showAll);
+      // pull out accepted events
+      const rawEvents = adminMode
+        ? allEvents
+        : eventsAsParticipantList!
+            .filter((p) => p.status === EventParticipantStatus.ACCEPTED)
+            .map((p) => p.event);
 
-        const sortedPastEvents = participatedEvents
+      // attach nextDate to each
+      const withNext = rawEvents!.map((ev) => ({
+        ...ev,
+        nextDate: getNextOccurrenceDate(ev),
+      }));
+
+      // filter out past/single unless extended or showAll
+      const filtered = extended
+        ? withNext
+        : withNext.filter(
+            (ev) =>
+              ev.occurrence !== EventOccurrence.SINGLE ||
+              isToday(ev.nextDate) ||
+              isFuture(ev.nextDate),
+          );
+
+      // sort by nextDate (or reverse if extended)
+      let sorted = filtered.sort((a, b) => {
+        const diff = a.nextDate.getTime() - b.nextDate.getTime();
+        return extended ? -diff : diff;
+      });
+
+      // if showAll, prepend truly past singletons
+      if (showAll) {
+        const pastSingles = withNext
           .filter(
-            (event) =>
-              isPast(event.dateTime) &&
-              event.occurrence !== EventOccurrence.DAILY,
+            (ev) =>
+              ev.occurrence === EventOccurrence.SINGLE && isPast(ev.nextDate),
           )
-          .sort(
-            (a, b) =>
-              new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
-          );
+          .sort((a, b) => a.nextDate.getTime() - b.nextDate.getTime());
+        sorted = pastSingles.concat(sorted);
+      }
 
-        if (showAll) {
-          sortedEvents = sortedPastEvents.concat(sortedEvents);
-        }
-        const upcomingEventsMap = new Map<string, EventType[]>();
-        for (const event of sortedEvents) {
-          let dayObject = extended
-            ? new Date(event.dateTime)
-            : new Date(
-                event.occurrence === EventOccurrence.DAILY
-                  ? new Date().setHours(getHours(event.dateTime))
-                  : event.dateTime,
-              );
-          dayObject = setHours(
-            setMinutes(setSeconds(setMilliseconds(dayObject, 0), 0), 0),
+      // group into a Map<dayString, EventType[]>
+      const upcomingEventsMap = new Map<string, EventType[]>();
+      for (const ev of sorted) {
+        // floor to midnight
+        const dayStart = setHours(
+          setMinutes(
+            setSeconds(setMilliseconds(new Date(ev.nextDate), 0), 0),
             0,
-          );
-          const dayString = dayObject.toISOString();
-          if (upcomingEventsMap.has(dayString)) {
-            const newList = upcomingEventsMap.get(dayString);
-            newList!.push(event);
-            upcomingEventsMap.set(dayString, newList as EventType[]);
-          } else {
-            upcomingEventsMap.set(dayString, [event]);
-          }
-        }
-        setEventsList(upcomingEventsMap);
-        console.log(upcomingEventsMap);
+          ),
+          0,
+        );
+        const key = dayStart.toISOString();
+        const list = upcomingEventsMap.get(key) || [];
+        list.push(ev);
+        upcomingEventsMap.set(key, list);
+      }
 
-        if (showAll === undefined) {
-          const item = upcomingEventsMap.entries().next().value;
-          if (item) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const [_, eventItem] = item;
-            setSelectedEvent?.(eventItem[0]);
-          }
+      // update state if changed
+      setEventsList(upcomingEventsMap);
+
+      // auto-select first if needed
+      if (showAll === undefined) {
+        console.log('here');
+        const first = upcomingEventsMap.entries().next().value;
+        if (first) {
+          const [day, items] = first;
+          setSelectedEvent?.(items[0]);
         }
       }
     },
-    [adminMode, events, eventsList, extended, setSelectedEvent],
+    [adminMode, allEvents, eventsAsParticipantList, extended, setSelectedEvent],
   );
 
   const handleSelectEvent = React.useCallback(
@@ -139,7 +130,6 @@ const EventsListPanelItems = ({
           resetAllTravelLogs();
         }
         setSelectedEvent?.(newSelectedEvent);
-        console.log(newSelectedEvent);
       }
     },
     [resetAllTravelLogs, setSelectedEvent, selectedEvent, extended],
@@ -157,7 +147,7 @@ const EventsListPanelItems = ({
 
   React.useEffect(() => {
     handleEvents();
-  }, [handleEvents]);
+  }, [allEvents, eventsAsParticipantList, handleEvents]);
 
   return (
     <div className="flex flex-col">
@@ -226,7 +216,7 @@ const EventsListPanelItems = ({
                         <Clock className="mr-2" size={16} />{' '}
                         {format(parseISO(event.dateTime), 'hh:mm a')}
                       </p>
-                      {event.occurrence === EventOccurrence.DAILY && (
+                      {event.occurrence !== EventOccurrence.SINGLE && (
                         <div
                           className={`absolute text-primary top-0 right-0 rounded-bl-md rounded-tr-md p-2 ${event.id === selectedEvent?.id ? 'border-primary border-l-2 border-b-2 bg-white' : 'border-muted border-b-2 border-l-2 bg-white'}`}
                         >

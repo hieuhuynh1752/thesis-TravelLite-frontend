@@ -18,7 +18,8 @@ import { useMap } from '@vis.gl/react-google-maps';
 
 const RoutesPanel = () => {
   const map = useMap();
-  const { selectedEvent, events, isEditingEvent } = useUserContext();
+  const { selectedEvent, eventsAsParticipantList, isEditingEvent } =
+    useUserContext();
   const {
     setSearchDirection,
     flattenedSelectedRoute,
@@ -34,8 +35,10 @@ const RoutesPanel = () => {
     React.useRef<google.maps.DirectionsRenderer>(null);
 
   const eventParticipantId = React.useMemo(() => {
-    return events?.find((event) => event.event === selectedEvent)?.id;
-  }, [events, selectedEvent]);
+    return eventsAsParticipantList?.find(
+      (event) => event.event.id === selectedEvent?.id,
+    )?.id;
+  }, [eventsAsParticipantList, selectedEvent]);
 
   const handleRouteDetailsBackButton = React.useCallback(() => {
     setFlattenedSelectedRoute?.(undefined);
@@ -86,6 +89,7 @@ const RoutesPanel = () => {
   );
 
   const handleSaveTravelRoute = React.useCallback(async () => {
+    console.log(flattenedSelectedRoute, eventParticipantId);
     if (eventParticipantId && flattenedSelectedRoute) {
       const data = savedTravelPlan
         ? await updateTravelPlanByParticipant(

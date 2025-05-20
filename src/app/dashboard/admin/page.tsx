@@ -25,11 +25,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { getFilteredEvents } from '@/utils/events-util';
+import { Button } from '@/components/ui/button';
 
 export default function AdminDashboard() {
-  const { setUser } = useUserContext();
+  const { setUser, allEvents, setAllEvents } = useUserContext();
   const [userId, setUserId] = React.useState<number | undefined>();
-  const [allEvents, setAllEvents] = React.useState<EventType[]>([]);
   const [selectedTab, setSelectedTab] = React.useState('users');
   const [userData, setUserData] = React.useState([]);
   const [googleMaps, setGoogleMaps] = React.useState<
@@ -41,17 +41,6 @@ export default function AdminDashboard() {
   >();
   const [selectedYear, setSelectedYear] = React.useState<string | undefined>();
   const [key, setKey] = React.useState(+new Date());
-
-  const filteredEvents = React.useMemo(() => {
-    if (filterType === 'lifetime') {
-      return allEvents;
-    } else {
-      return getFilteredEvents(allEvents, {
-        month: selectedMonth,
-        year: selectedYear,
-      });
-    }
-  }, [allEvents, filterType, selectedMonth, selectedYear]);
 
   const handleGetUserData = React.useCallback(() => {
     if (!!userId) {
@@ -67,7 +56,30 @@ export default function AdminDashboard() {
         setAllEvents?.(value);
       });
     }
-  }, [userId, setUser]);
+  }, [userId, setUser, setAllEvents]);
+
+  const filterEvents = React.useCallback(() => {
+    let events: EventType[] = [];
+    if (allEvents) {
+      if (filterType === 'lifetime') {
+        handleGetUserData();
+        return;
+      } else {
+        events = getFilteredEvents(allEvents, {
+          month: selectedMonth,
+          year: selectedYear,
+        });
+      }
+      setAllEvents?.(events);
+    }
+  }, [
+    allEvents,
+    filterType,
+    handleGetUserData,
+    selectedMonth,
+    selectedYear,
+    setAllEvents,
+  ]);
 
   const handleGetUsersData = React.useCallback(() => {
     getAllUsers().then((value) => setUserData(value));
@@ -154,7 +166,7 @@ export default function AdminDashboard() {
                           <Label>Type: </Label>
                           <div className="flex p-1 bg-gray-100 w-fit rounded gap-1">
                             <div
-                              className={`px-4 rounded cursor-pointer font-semibold text-gray-500 hover:bg-muted/30 hover:text-primary ${filterType === 'lifetime' && 'bg-muted/50 font-semibold text-primary'}`}
+                              className={`px-4 rounded cursor-pointer font-semibold text-gray-500 hover:bg-muted/30 hover:text-primary ${filterType === 'lifetime' && 'bg-muted/50 text-primary'}`}
                               onClick={() => handleFilterTypeChange('lifetime')}
                             >
                               Lifetime
@@ -164,7 +176,7 @@ export default function AdminDashboard() {
                               className={'bg-primary h-auto'}
                             />
                             <div
-                              className={`px-4 rounded cursor-pointer font-semibold text-gray-500 hover:bg-muted/30 hover:text-primary ${filterType === 'monthly' && 'bg-muted/50 font-semibold text-primary'}`}
+                              className={`px-4 rounded cursor-pointer font-semibold text-gray-500 hover:bg-muted/30 hover:text-primary ${filterType === 'monthly' && 'bg-muted/50 text-primary'}`}
                               onClick={() => handleFilterTypeChange('monthly')}
                             >
                               Monthly
@@ -174,7 +186,7 @@ export default function AdminDashboard() {
                               className={'bg-primary h-auto'}
                             />
                             <div
-                              className={`px-4 rounded cursor-pointer font-semibold text-gray-500 hover:bg-muted/30 hover:text-primary  ${filterType === 'yearly' && 'bg-muted/50 font-semibold text-primary'}`}
+                              className={`px-4 rounded cursor-pointer font-semibold text-gray-500 hover:bg-muted/30 hover:text-primary  ${filterType === 'yearly' && 'bg-muted/50 text-primary'}`}
                               onClick={() => handleFilterTypeChange('yearly')}
                             >
                               Yearly
@@ -191,7 +203,7 @@ export default function AdminDashboard() {
                             value={selectedMonth}
                             key={key}
                           >
-                            <SelectTrigger>
+                            <SelectTrigger className={`min-w-[148px]`}>
                               <SelectValue placeholder="Select a month" />
                             </SelectTrigger>
                             <SelectContent>
@@ -220,7 +232,7 @@ export default function AdminDashboard() {
                             value={selectedYear}
                             key={key}
                           >
-                            <SelectTrigger>
+                            <SelectTrigger className={`min-w-36`}>
                               <SelectValue placeholder="Select a year" />
                             </SelectTrigger>
                             <SelectContent>
@@ -229,14 +241,14 @@ export default function AdminDashboard() {
                             </SelectContent>
                           </Select>
                         </div>
+                        <Button size={'sm'} onClick={() => filterEvents()}>
+                          Apply
+                        </Button>
                       </div>
                       <Separator orientation={'horizontal'} />
                     </div>
                     <div className="flex flex-1 gap-2">
-                      <EventsListPanel
-                        extended
-                        adminMode={{ allEvents: filteredEvents }}
-                      />
+                      <EventsListPanel extended adminMode />
                       <div
                         className={`flex flex-1 flex-col overflow-y-auto`}
                         style={{ maxHeight: 'calc(90vh - 0.5rem)' }}

@@ -22,7 +22,7 @@ import { toast } from 'sonner';
 
 export default function ExplorePage() {
   const router = useRouter();
-  const { user, setUser, setEvents } = useUserContext();
+  const { user, setUser, setEventsAsParticipantList } = useUserContext();
   const [userId, setUserId] = React.useState<number | undefined>();
   const [publicEvents, setPublicEvents] = React.useState<EventType[]>([]);
 
@@ -35,10 +35,10 @@ export default function ExplorePage() {
           email: value.email,
           role: value.role,
         });
-        setEvents?.(value.eventsParticipated);
+        setEventsAsParticipantList?.(value.eventsParticipated);
       });
     }
-  }, [userId, setUser, setEvents]);
+  }, [userId, setUser, setEventsAsParticipantList]);
 
   const handleRegisterToEvent = React.useCallback(
     (event: EventType) => {

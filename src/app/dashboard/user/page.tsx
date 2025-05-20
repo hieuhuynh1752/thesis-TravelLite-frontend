@@ -21,16 +21,17 @@ import TravelHistoryChart from '@/components/charts/travel-history-chart.view';
 import TravelPreferencesHistoryChart from '@/components/charts/travel-preference-pie-chart.view';
 
 export default function UserDashboard() {
-  const { user, setUser, events, setEvents } = useUserContext();
+  const { user, setUser, eventsAsParticipantList, setEventsAsParticipantList } =
+    useUserContext();
   const [userId, setUserId] = React.useState<number | undefined>();
   const [today, setToday] = React.useState<string>('');
 
   const travelHistoryData = React.useMemo(() => {
-    if (events) {
-      return getTravelHistoryData(events);
+    if (eventsAsParticipantList) {
+      return getTravelHistoryData(eventsAsParticipantList);
     }
     return undefined;
-  }, [events]);
+  }, [eventsAsParticipantList]);
 
   const travelHistoryChartData = React.useMemo(() => {
     if (travelHistoryData) {
@@ -53,10 +54,10 @@ export default function UserDashboard() {
           email: value.email,
           role: value.role,
         });
-        setEvents?.(value.eventsParticipated);
+        setEventsAsParticipantList?.(value.eventsParticipated);
       });
     }
-  }, [userId, setUser, setEvents]);
+  }, [userId, setUser, setEventsAsParticipantList]);
 
   React.useEffect(() => {
     const currentDate = new Date().toLocaleDateString('en-US', {
@@ -132,7 +133,7 @@ export default function UserDashboard() {
             <div className="flex flex-col w-1/4 min-w-96 h-full max-h-[80vh] bg-muted/30 p-4 gap-4 rounded-xl">
               <p className="text-3xl font-bold">Invitations</p>
               <PendingEvents
-                data={events}
+                data={eventsAsParticipantList}
                 onUpdate={() => handleGetUserData()}
               />
             </div>

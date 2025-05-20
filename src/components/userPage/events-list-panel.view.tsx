@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { useUserContext } from '@/contexts/user-context';
 import Cookie from 'js-cookie';
-import { EventType, UserRole } from '../../../services/api/type.api';
+import { UserRole } from '../../../services/api/type.api';
 import { redirect } from 'next/navigation';
 import { getMe } from '../../../services/api/auth.api';
 import { getUserById } from '../../../services/api/user.api';
@@ -10,13 +10,11 @@ import EventsListPanelItems from '@/components/userPage/events-list-panel-items.
 
 interface EventsListPanelProps {
   extended?: boolean;
-  adminMode?: {
-    allEvents: EventType[];
-  };
+  adminMode?: boolean;
 }
 
 const EventsListPanel = ({ extended, adminMode }: EventsListPanelProps) => {
-  const { setUser, setEvents } = useUserContext();
+  const { setUser, setEventsAsParticipantList } = useUserContext();
   const [userId, setUserId] = React.useState<number | undefined>();
 
   const handleGetUserData = React.useCallback(() => {
@@ -28,10 +26,10 @@ const EventsListPanel = ({ extended, adminMode }: EventsListPanelProps) => {
           email: value.email,
           role: value.role,
         });
-        setEvents?.(value.eventsParticipated);
+        setEventsAsParticipantList?.(value.eventsParticipated);
       });
     }
-  }, [userId, setUser, setEvents]);
+  }, [userId, setUser, setEventsAsParticipantList]);
 
   React.useEffect(() => {
     if (!adminMode) {

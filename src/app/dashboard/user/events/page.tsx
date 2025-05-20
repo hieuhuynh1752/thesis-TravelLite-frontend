@@ -15,7 +15,7 @@ import OverviewTravelHistoryReport from '@/components/userPage/overview-travel-h
 import { useUserContext } from '@/contexts/user-context';
 
 export default function UserEvents() {
-  const { events } = useUserContext();
+  const { eventsAsParticipantList } = useUserContext();
   const [googleMaps, setGoogleMaps] = React.useState<
     typeof google.maps | undefined
   >(undefined);
@@ -63,7 +63,7 @@ export default function UserEvents() {
               </div>
             </div>
             {selectedTab === 'reports' ? (
-              <OverviewTravelHistoryReport events={events} />
+              <OverviewTravelHistoryReport events={eventsAsParticipantList} />
             ) : (
               <div className="flex flex-1 gap-2 pt-4">
                 <EventsListPanel extended />

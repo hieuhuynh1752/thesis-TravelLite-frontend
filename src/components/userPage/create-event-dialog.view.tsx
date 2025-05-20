@@ -79,7 +79,8 @@ export interface CreateOrUpdateEventDialogProps {
 }
 
 const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
-  const { user, setUser, setEvents, setIsEditingEvent } = useUserContext();
+  const { user, setUser, setEventsAsParticipantList, setIsEditingEvent } =
+    useUserContext();
   const map = useMap();
   const [title, setTitle] = React.useState<string>('');
   const [description, setDescription] = React.useState<string>('');
@@ -265,7 +266,7 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
                 email: value.email,
                 role: value.role,
               });
-              setEvents?.(value.eventsParticipated);
+              setEventsAsParticipantList?.(value.eventsParticipated);
               toast('Event has been updated successfully!');
             });
           }
@@ -280,7 +281,7 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
                 email: value.email,
                 role: value.role,
               });
-              setEvents?.(value.eventsParticipated);
+              setEventsAsParticipantList?.(value.eventsParticipated);
               toast('Event has been created successfully!');
             });
           }
@@ -295,7 +296,7 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
     destination,
     user,
     setUser,
-    setEvents,
+    setEventsAsParticipantList,
   ]);
 
   const CommandItemsList = React.useCallback(() => {

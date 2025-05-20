@@ -28,6 +28,7 @@ import {
 } from '@/utils/charts-util';
 import { PercentagePieChart } from '@/components/ui/charts/percentage-pie-chart';
 import { DataTable } from '@/components/ui/table/data-table.view';
+import { EventOccurrence } from '../../../services/api/type.api';
 
 interface EventDetailsPanelProps {
   isRoutesPanelVisible?: boolean;
@@ -100,6 +101,15 @@ function EventDetailsPanel({
             <Clock size={16} className="self-center" />
             {'Date & Time: '}
           </div>
+          {selectedEvent?.occurrence !== EventOccurrence.SINGLE && (
+            <span>
+              Repeats{' '}
+              <span className="text-primary font-semibold">
+                {selectedEvent?.occurrence.toLowerCase()}
+              </span>{' '}
+              from
+            </span>
+          )}{' '}
           {selectedEvent
             ? format(parseISO(selectedEvent.dateTime!), 'MMMM dd yyyy, hh:mm a')
             : ''}

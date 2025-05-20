@@ -28,7 +28,7 @@ import { toast } from 'sonner';
 export default function EventDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const { user, setUser, setEvents } = useUserContext();
+  const { user, setUser, setEventsAsParticipantList } = useUserContext();
   const [event, setEvent] = React.useState<EventType>();
   const [userId, setUserId] = React.useState<number | undefined>();
   const [googleMaps, setGoogleMaps] = React.useState<
@@ -54,10 +54,10 @@ export default function EventDetailsPage() {
           email: value.email,
           role: value.role,
         });
-        setEvents?.(value.eventsParticipated);
+        setEventsAsParticipantList?.(value.eventsParticipated);
       });
     }
-  }, [userId, setUser, setEvents]);
+  }, [userId, setUser, setEventsAsParticipantList]);
 
   React.useEffect(() => {
     getMe().then((userId) => setUserId(userId));
