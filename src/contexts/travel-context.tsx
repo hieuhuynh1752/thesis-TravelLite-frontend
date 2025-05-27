@@ -1,9 +1,11 @@
 'use client';
 import React, { createContext, useContext, useState } from 'react';
 
-type DirectionType = {
+export type DirectionType = {
   origin: string;
   destination: string;
+  arrivalTime?: Date;
+  departureTime?: Date;
 };
 
 type SelectedRouteType = {

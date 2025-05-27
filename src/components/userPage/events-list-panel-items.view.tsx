@@ -112,7 +112,6 @@ const EventsListPanelItems = ({
 
       // auto-select first if needed
       if (showAll === undefined) {
-        console.log('here');
         const first = upcomingEventsMap.entries().next().value;
         if (first) {
           /* eslint-disable  @typescript-eslint/no-unused-vars */
@@ -205,7 +204,7 @@ const EventsListPanelItems = ({
                     <div
                       key={key}
                       className={`block shadow-none transition-shadow duration-300 cursor-pointer hover:shadow-md hover:shadow-muted p-4 rounded-md w-full 
-                      ${event.id === selectedEvent?.id ? 'border-primary border-2 border-l-8 bg-white' : 'border-muted border-2 border-l-8 bg-white'}
+                      ${event.id === selectedEvent?.id ? 'border-primary border-2 border-l-8 bg-muted/20' : 'border-muted border-2 border-l-8 bg-white'}
                        relative`}
                       onClick={() => handleSelectEvent(event)}
                     >

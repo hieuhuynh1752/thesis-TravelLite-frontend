@@ -117,7 +117,7 @@ const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = (
   return (
     <div
       className={
-        'w-full max-w-md border-2 focus-within:border-gray-700 rounded-lg ' +
+        'w-full border-2 focus-within:border-gray-700 rounded-lg ' +
         props.className
       }
     >

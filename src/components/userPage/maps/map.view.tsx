@@ -51,6 +51,8 @@ const MapContainer: React.FC = () => {
             <Directions
               origin={searchDirection.origin}
               destination={searchDirection.destination}
+              arrivalTime={searchDirection.arrivalTime}
+              departureTime={searchDirection.departureTime}
             />
           )}
         </Map>

@@ -7,9 +7,16 @@ type DirectionsProps = {
   origin?: string;
   destination?: string;
   travelMode?: google.maps.TravelMode;
+  arrivalTime?: Date;
+  departureTime?: Date;
 };
 
-const Directions: React.FC<DirectionsProps> = ({ origin, destination }) => {
+const Directions: React.FC<DirectionsProps> = ({
+  origin,
+  destination,
+  arrivalTime,
+  departureTime,
+}) => {
   const map = useMap();
   const routesLibrary = useMapsLibrary('routes');
   const [directionsService, setDirectionsService] =
@@ -48,7 +55,7 @@ const Directions: React.FC<DirectionsProps> = ({ origin, destination }) => {
     const fetchRoutesForAllModes = async () => {
       try {
         const responses: google.maps.DirectionsResult[] = [];
-
+        console.log(arrivalTime, departureTime);
         await Promise.all(
           travelModes.map(async (mode) => {
             try {
@@ -57,6 +64,15 @@ const Directions: React.FC<DirectionsProps> = ({ origin, destination }) => {
                 destination: { placeId: destination } as google.maps.Place,
                 travelMode: mode,
                 provideRouteAlternatives: true,
+                transitOptions: {
+                  arrivalTime: arrivalTime,
+                  departureTime: departureTime,
+                },
+                drivingOptions: departureTime
+                  ? {
+                      departureTime: departureTime,
+                    }
+                  : undefined,
               });
               // Ensure the response is valid
               if (response && response.routes && response.routes.length > 0) {
@@ -94,6 +110,8 @@ const Directions: React.FC<DirectionsProps> = ({ origin, destination }) => {
     travelModes,
     setResponses,
     setUnavailableTravelModes,
+    arrivalTime,
+    departureTime,
   ]);
 
   // Update direction route

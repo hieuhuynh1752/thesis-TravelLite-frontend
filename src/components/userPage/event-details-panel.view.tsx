@@ -29,6 +29,9 @@ import {
 import { PercentagePieChart } from '@/components/ui/charts/percentage-pie-chart';
 import { DataTable } from '@/components/ui/table/data-table.view';
 import { EventOccurrence } from '../../../services/api/type.api';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getTravelPlanByParticipant } from '../../../services/api/travel-plan.api';
+import { FlattenedSelectedRoute } from '@/contexts/travel-context';
 
 interface EventDetailsPanelProps {
   isRoutesPanelVisible?: boolean;
@@ -46,14 +49,79 @@ function EventDetailsPanel({
   const { user, selectedEvent } = useUserContext();
   const router = useRouter();
   const [eventDetailExpanded, setEventDetailExpanded] = React.useState(true);
+  const [participantTravelDetails, setParticipantTravelDetails] =
+    React.useState<
+      | (FlattenedSelectedRoute & {
+          eventParticipantId: number;
+        })
+      | undefined
+    >();
+
+  const getParticipantTravelDetails = React.useCallback(async () => {
+    const participantInfo = selectedEvent?.participants.find(
+      (participant) =>
+        participant.user.id === user?.id && !!participant.travelPlan,
+    );
+    if (participantInfo && participantInfo.travelPlan) {
+      const data = await getTravelPlanByParticipant(participantInfo.id);
+      setParticipantTravelDetails(data);
+    }
+  }, [selectedEvent?.participants, user?.id]);
 
   const handleToggleEventDetail = React.useCallback(() => {
     setEventDetailExpanded((prevState) => !prevState);
   }, []);
 
-  console.log(
-    selectedEvent?.participants && selectedEvent.participants.length > 0,
-  );
+  const getOverviewContent = React.useCallback(() => {
+    if (!participantTravelDetails) {
+      return null;
+    } else
+      return (
+        <Card className={`w-fit`}>
+          <CardHeader>
+            <CardTitle>
+              {participantTravelDetails.origin.split(',')[0]} {' - '}
+              {selectedEvent?.location.name}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`flex flex-col gap-2`}>
+              <div>
+                <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
+                  {'Travel mode: '}
+                </div>
+                <span className={`capitalize`}>
+                  {participantTravelDetails.travelMode.toLowerCase()}
+                </span>
+              </div>
+              <div>
+                <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
+                  {'Duration: '}
+                </div>
+                {
+                  participantTravelDetails.routeDetails.routes[0].legs[0]
+                    .duration?.text
+                }
+              </div>
+              <div>
+                <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
+                  {'Distance: '}
+                </div>
+                {
+                  participantTravelDetails.routeDetails.routes[0].legs[0]
+                    .distance?.text
+                }
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      );
+  }, [participantTravelDetails, selectedEvent?.location.name]);
+
+  React.useEffect(() => {
+    getParticipantTravelDetails();
+  }, [getParticipantTravelDetails]);
+
   return (
     <div className="w-full bg-white flex flex-col px-4 gap-2 pt-2">
       <div
@@ -150,6 +218,7 @@ function EventDetailsPanel({
                     key={index}
                     hideClearButton
                     status={participant.status}
+                    hasPlan={!!participant.travelPlan}
                   />
                 ))}
               </div>
@@ -310,6 +379,14 @@ function EventDetailsPanel({
                 participant.user.id === user?.id && !!participant.travelPlan,
             ) ? (
             <div className={`flex flex-col gap-2 pt-2`}>
+              <div className={`pt-2 flex flex-col gap-2`}>
+                <p
+                  className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
+                >
+                  Overview
+                </p>
+                {getOverviewContent()}
+              </div>
               <div className={`pt-4`}>
                 <p
                   className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
@@ -317,8 +394,8 @@ function EventDetailsPanel({
                   Carbon Emission Rates (kg CO₂e)
                 </p>
                 <p className={`text-sm italic text-gray-500 mt-1`}>
-                  This explains the Emissions of your Travel Plan and compare it
-                  with other participants in average.
+                  This explains the rough emissions estimation of your Travel
+                  Plan and compare it with other participants.
                 </p>
               </div>
               <HorizontalBarChart
@@ -347,6 +424,25 @@ function EventDetailsPanel({
                   user!.id,
                 )}
               />
+              <Separator orientation={'horizontal'} className={`my-4`} />
+              <div>
+                <div>
+                  <p
+                    className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
+                  >
+                    Travel Modes Ratio
+                  </p>
+                  <p className={`text-sm italic text-gray-500 mt-1`}>
+                    This explains the Travel Modes of Paticipant&#39;s declared
+                    to this Event.
+                  </p>
+                </div>
+                <PercentagePieChart
+                  data={calculateParticipantsTravelModePreferencesOnEvent(
+                    selectedEvent?.participants,
+                  )}
+                />
+              </div>
             </div>
           ) : (
             <div className={`pt-2`}>

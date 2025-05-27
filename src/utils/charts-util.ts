@@ -214,20 +214,25 @@ export const calculatePersonalEmissionRateOnEvent = (
   userId: number,
 ): { name: string; value: number }[] => {
   const output = [];
+  const filteredData = data.filter((participant) => !!participant.travelPlan);
   output.push({
     name: 'You',
     value:
-      data.find((participant) => participant.user.id === userId)?.travelPlan
-        ?.totalCo2 ?? 0,
+      filteredData.find((participant) => participant.user.id === userId)
+        ?.travelPlan?.totalCo2 ?? 0,
   });
   let totalCo2OfAllParticipants = 0;
-  data.forEach(
+  filteredData.forEach(
     (participant) =>
       (totalCo2OfAllParticipants += participant.travelPlan?.totalCo2 ?? 0),
   );
   output.push({
     name: 'Average',
-    value: totalCo2OfAllParticipants / data.length,
+    value: totalCo2OfAllParticipants / filteredData.length,
+  });
+  output.push({
+    name: 'Total',
+    value: totalCo2OfAllParticipants,
   });
   return output;
 };

@@ -2,9 +2,9 @@
 import * as React from 'react';
 import GoogleMapsAutocomplete from '@/components/userPage/maps/places-autocomplete.view';
 import { useUserContext } from '@/contexts/user-context';
-import { ArrowLeft, MapPin } from 'lucide-react';
+import { ArrowLeft, Calendar as CalendarIcon, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useTravelContext } from '@/contexts/travel-context';
+import { DirectionType, useTravelContext } from '@/contexts/travel-context';
 import RouteOptionList from '@/components/userPage/maps/route-option-list.view';
 import {
   createTravelPlan,
@@ -15,6 +15,22 @@ import RouteDetails from '@/components/userPage/maps/route-details.view';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useMap } from '@vis.gl/react-google-maps';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import TimePicker from '@/components/ui/time-picker';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { format, setHours, setMinutes } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar';
 
 const RoutesPanel = () => {
   const map = useMap();
@@ -31,6 +47,14 @@ const RoutesPanel = () => {
     originValue,
     setOriginValue,
   } = useTravelContext();
+  const [timingOptions, setTimingOptions] = React.useState<string>('leaveNow');
+  const [date, setDate] = React.useState<Date>();
+  const [timeValue, setTimeValue] = React.useState<string>(() => {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
+  });
   const directionRendererRef =
     React.useRef<google.maps.DirectionsRenderer>(null);
 
@@ -39,6 +63,86 @@ const RoutesPanel = () => {
       (event) => event.event.id === selectedEvent?.id,
     )?.id;
   }, [eventsAsParticipantList, selectedEvent]);
+
+  const handleTimingOptionsChange = React.useCallback(
+    (value: string) => {
+      if (value === 'leaveNow') {
+        setTimingOptions('leaveNow');
+        setSearchDirection((prevState) => {
+          return {
+            ...prevState,
+            arrivalTime: undefined,
+            departureTime: undefined,
+          } as DirectionType;
+        });
+      } else if (value === 'departAt') {
+        setTimingOptions('departAt');
+        setDate(new Date());
+        setTimeValue(() => {
+          const now = new Date();
+          const hh = String(now.getHours()).padStart(2, '0');
+          const mm = String(now.getMinutes()).padStart(2, '0');
+          return `${hh}:${mm}`;
+        });
+        setSearchDirection((prevState) => {
+          return {
+            ...prevState,
+            arrivalTime: undefined,
+            departureTime: new Date(),
+          } as DirectionType;
+        });
+      } else {
+        setTimingOptions('arriveBy');
+        setDate(new Date());
+        setSearchDirection((prevState) => {
+          return {
+            ...prevState,
+            arrivalTime: new Date(),
+            departureTime: undefined,
+          } as DirectionType;
+        });
+      }
+    },
+    [setSearchDirection],
+  );
+
+  const handleTimeChange: React.ChangeEventHandler<HTMLInputElement> =
+    React.useCallback(
+      (event) => {
+        const time = event.target.value;
+        const [hours, minutes] = time
+          .split(':')
+          .map((str) => parseInt(str, 10));
+        const newSelectedDate = setHours(
+          setMinutes(date ?? new Date(), minutes),
+          hours,
+        );
+        setDate(newSelectedDate);
+        setTimeValue(time);
+      },
+      [date],
+    );
+
+  const handleDaySelect = React.useCallback(
+    (selectedDate: Date | undefined) => {
+      if (!timeValue || !selectedDate) {
+        setDate(selectedDate);
+        return;
+      }
+      const [hours, minutes] = timeValue
+        .split(':')
+        .map((str) => parseInt(str, 10));
+      const newDate = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        selectedDate.getDate(),
+        hours,
+        minutes,
+      );
+      setDate(newDate);
+    },
+    [timeValue],
+  );
 
   const handleRouteDetailsBackButton = React.useCallback(() => {
     setFlattenedSelectedRoute?.(undefined);
@@ -115,9 +219,12 @@ const RoutesPanel = () => {
   const handleOriginSelect = React.useCallback(
     (place: google.maps.places.PlaceResult | null) => {
       directionRendererRef.current?.setMap(null);
-      setSearchDirection({
-        origin: place!.place_id ?? '',
-        destination: selectedEvent?.location.googlePlaceId ?? '',
+      setSearchDirection((prevState) => {
+        return {
+          ...prevState,
+          origin: place!.place_id ?? '',
+          destination: selectedEvent?.location.googlePlaceId ?? '',
+        };
       });
       setOriginValue(place?.formatted_address ?? '');
     },
@@ -127,6 +234,16 @@ const RoutesPanel = () => {
   React.useEffect(() => {
     handleLoadTravelRoute();
   }, [handleLoadTravelRoute]);
+
+  React.useEffect(() => {
+    setSearchDirection((prevState) => {
+      return {
+        ...prevState,
+        arrivalTime: timingOptions === 'arriveBy' ? date : undefined,
+        departureTime: timingOptions === 'departAt' ? date : undefined,
+      } as DirectionType;
+    });
+  }, [date, setSearchDirection, timingOptions]);
 
   React.useEffect(() => {
     if (map && savedTravelPlan?.routeDetails && !isEditingEvent) {
@@ -173,14 +290,64 @@ const RoutesPanel = () => {
             <Separator orientation={'horizontal'} />
           </div>
         )}
-        <div className={`h-20 w-full px-2 flex flex-col gap-2`}>
+        <div className={`w-full px-2 flex flex-col gap-2`}>
           <div className={`font-bold`}>Choose your origin:</div>
           <GoogleMapsAutocomplete
             onSelect={handleOriginSelect}
             inputValue={originValue}
             onInputValueChange={(value) => setOriginValue(value)}
           />
+          <Separator orientation={'horizontal'} />
+          <div className={`flex gap-2 items-center`}>
+            <div className={`font-semibold`}>Options:</div>
+            <Select
+              value={timingOptions}
+              onValueChange={handleTimingOptionsChange}
+            >
+              <SelectTrigger className={`w-fit`}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={'leaveNow'}>Leave now</SelectItem>
+                <SelectItem value={'departAt'}>Depart at</SelectItem>
+                <SelectItem value={'arriveBy'}>Arrive by</SelectItem>
+              </SelectContent>
+            </Select>
+            {timingOptions !== 'leaveNow' && (
+              <>
+                <TimePicker
+                  id={'time'}
+                  value={timeValue}
+                  onTimeChange={handleTimeChange}
+                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={'outline'}
+                      className={cn(
+                        'w-full justify-start text-left font-normal',
+                        !date && 'text-muted-foreground',
+                      )}
+                      size={'sm'}
+                    >
+                      <CalendarIcon size={14} />{' '}
+                      {date ? format(date, 'PPP') : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={handleDaySelect}
+                      disabled={{ before: new Date() }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </>
+            )}
+          </div>
         </div>
+        <Separator orientation={'horizontal'} />
         <RouteOptionList />
         <div
           className={`h-12 bg-gray-200 text-gray-700 p-2 inline-flex items-center text-md gap-1`}
