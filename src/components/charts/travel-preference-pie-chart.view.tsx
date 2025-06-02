@@ -31,17 +31,18 @@ const TravelPreferencesHistoryChart = ({
           </p>
         </div>
         <div className={'flex'}>
-          <ChartContainer config={{}} className={'pb-2 min-h-[250px] w-1/2'}>
+          <ChartContainer config={{}} className={'pb-2 min-h-[250px] w-full'}>
             <PieChart>
               <Pie
                 data={chartData}
                 dataKey="value"
                 nameKey="name"
-                cx="50%"
-                cy="50%"
+                // cx="50%"
+                // cy="50%"
                 outerRadius={100}
                 fill="#8884d8"
                 label
+                width={'20%'}
               >
                 {chartData?.map((_, index) => (
                   <Cell

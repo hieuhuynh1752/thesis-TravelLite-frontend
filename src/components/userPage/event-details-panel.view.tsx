@@ -4,13 +4,19 @@ import { useUserContext } from '@/contexts/user-context';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import {
+  Bike,
+  Bus,
+  Car,
   ChevronsDown,
   ChevronsLeft,
   ChevronsRight,
   ChevronsUp,
+  CircleDotDashed,
   Clock,
+  Footprints,
   Leaf,
   MapPin,
+  Route,
   ScanText,
   UserCog,
   Users,
@@ -29,20 +35,19 @@ import {
 import { PercentagePieChart } from '@/components/ui/charts/percentage-pie-chart';
 import { DataTable } from '@/components/ui/table/data-table.view';
 import { EventOccurrence } from '../../../services/api/type.api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getTravelPlanByParticipant } from '../../../services/api/travel-plan.api';
 import { FlattenedSelectedRoute } from '@/contexts/travel-context';
 
 interface EventDetailsPanelProps {
-  isRoutesPanelVisible?: boolean;
-  toggleRoutesPanel?(): void;
+  isTravelPlansPanelVisible?: boolean;
+  toggleTravelPlansPanel?(): void;
   extended?: boolean;
   adminMode?: boolean;
 }
 
 function EventDetailsPanel({
-  isRoutesPanelVisible,
-  toggleRoutesPanel,
+  isTravelPlansPanelVisible,
+  toggleTravelPlansPanel,
   extended,
   adminMode,
 }: EventDetailsPanelProps) {
@@ -53,7 +58,7 @@ function EventDetailsPanel({
     React.useState<
       | (FlattenedSelectedRoute & {
           eventParticipantId: number;
-        })
+        })[]
       | undefined
     >();
 
@@ -72,51 +77,91 @@ function EventDetailsPanel({
     setEventDetailExpanded((prevState) => !prevState);
   }, []);
 
+  const getTravelMethodIcon = React.useCallback(
+    (travelMode: google.maps.TravelMode) => {
+      if (travelMode === google.maps.TravelMode.DRIVING) {
+        return <Car size={24} className="self-center" />;
+      }
+      if (travelMode === google.maps.TravelMode.TRANSIT) {
+        return <Bus size={24} className="self-center" />;
+      }
+      if (travelMode === google.maps.TravelMode.WALKING) {
+        return <Footprints size={24} className="self-center" />;
+      }
+      if (travelMode === google.maps.TravelMode.BICYCLING) {
+        return <Bike size={24} className="self-center" />;
+      }
+    },
+    [],
+  );
+
   const getOverviewContent = React.useCallback(() => {
     if (!participantTravelDetails) {
       return null;
     } else
-      return (
-        <Card className={`w-fit`}>
-          <CardHeader>
-            <CardTitle>
-              {participantTravelDetails.origin.split(',')[0]} {' - '}
-              {selectedEvent?.location.name}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`flex flex-col gap-2`}>
-              <div>
-                <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
-                  {'Travel mode: '}
-                </div>
-                <span className={`capitalize`}>
-                  {participantTravelDetails.travelMode.toLowerCase()}
-                </span>
+      return participantTravelDetails.map((plan, index) => {
+        return (
+          <div
+            key={index}
+            className={`flex flex-col w-fit bg-white rounded h-fit border-primary border-2 cursor-pointer shadow-none transition-shadow duration-300 hover:shadow-md hover:shadow-muted`}
+          >
+            <div
+              className={`text-primary bg-muted/20 p-2 pl-4 inline-flex justify-between`}
+            >
+              <div
+                className={`capitalize text-lg font-semibold inline-flex items-baseline gap-2`}
+              >
+                {getTravelMethodIcon(plan.travelMode)}
+                {plan.travelMode.toLowerCase()}
               </div>
-              <div>
-                <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
-                  {'Duration: '}
-                </div>
-                {
-                  participantTravelDetails.routeDetails.routes[0].legs[0]
-                    .duration?.text
+              <span
+                className={
+                  'text-md font-semibold text-primary bg-white px-2 rounded border border-primary'
                 }
+              >
+                {plan.totalCo2} kg CO₂e <Leaf className="inline" size={16} />
+              </span>
+            </div>
+            <div className={`p-2 flex flex-col gap-2`}>
+              <div>
+                <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
+                  <Clock size={16} className="self-center" />
+                  {'Date & Time: '}
+                </div>
+                {selectedEvent?.occurrence === EventOccurrence.DAILY
+                  ? 'Daily at ' + format(new Date(plan.plannedAt), 'hh:mm a')
+                  : format(new Date(plan.plannedAt), 'MMMM dd yyyy, hh:mm a')}
               </div>
               <div>
                 <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
+                  <CircleDotDashed size={16} className="self-center" />
+                  {'From: '}
+                </div>
+                {plan.origin.split(',')[0]}
+              </div>
+              <div>
+                <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
+                  <MapPin size={16} className="self-center" />
+                  {'To: '}
+                </div>{' '}
+                {plan.destination.split(',')[0]}
+              </div>
+              <div>
+                <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
+                  <Route size={16} className="self-center" />
                   {'Distance: '}
-                </div>
-                {
-                  participantTravelDetails.routeDetails.routes[0].legs[0]
-                    .distance?.text
-                }
+                </div>{' '}
+                {plan.routeDetails.routes[0].legs[0].distance?.text}
               </div>
             </div>
-          </CardContent>
-        </Card>
-      );
-  }, [participantTravelDetails, selectedEvent?.location.name]);
+          </div>
+        );
+      });
+  }, [
+    getTravelMethodIcon,
+    participantTravelDetails,
+    selectedEvent?.occurrence,
+  ]);
 
   React.useEffect(() => {
     getParticipantTravelDetails();
@@ -179,18 +224,19 @@ function EventDetailsPanel({
             </span>
           )}{' '}
           {selectedEvent
-            ? format(parseISO(selectedEvent.dateTime!), 'MMMM dd yyyy, hh:mm a')
+            ? format(
+                parseISO(selectedEvent.dateTime!),
+                'MMMM dd, yyyy, hh:mm a',
+              )
             : ''}
         </div>
-        {extended && (
-          <div className={`text-gray-700`}>
-            <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
-              <MapPin size={16} className="self-center" />
-              {'At: '}
-            </div>
-            {selectedEvent ? selectedEvent.location.address : ''}
+        <div className={`text-gray-700`}>
+          <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
+            <MapPin size={16} className="self-center" />
+            {'At: '}
           </div>
-        )}
+          {selectedEvent ? selectedEvent.location.address : ''}
+        </div>
         <div
           className={`text-gray-700 ${eventDetailExpanded || extended ? '' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
         >
@@ -218,7 +264,10 @@ function EventDetailsPanel({
                     key={index}
                     hideClearButton
                     status={participant.status}
-                    hasPlan={!!participant.travelPlan}
+                    hasPlan={
+                      !!participant.travelPlan &&
+                      participant.travelPlan.length > 0
+                    }
                   />
                 ))}
               </div>
@@ -339,7 +388,13 @@ function EventDetailsPanel({
                           header: 'Total CO₂e (kg)',
                           cell: ({ row }) => {
                             return (
-                              row.original.travelPlan?.totalCo2 ?? (
+                              row.original.travelPlan?.reduce(
+                                (co2PerPlanAcc, plan) => {
+                                  const subCo2 = plan.totalCo2;
+                                  return co2PerPlanAcc + subCo2;
+                                },
+                                0,
+                              ) ?? (
                                 <span className={`italic text-gray-500`}>
                                   Undeclared
                                 </span>
@@ -357,7 +412,13 @@ function EventDetailsPanel({
                           >
                             {selectedEvent.participants.reduce(
                               (acc, participant) => {
-                                const co2 = participant.travelPlan?.totalCo2;
+                                const co2 = participant.travelPlan?.reduce(
+                                  (co2PerPlanAcc, plan) => {
+                                    const subCo2 = plan.totalCo2;
+                                    return co2PerPlanAcc + subCo2;
+                                  },
+                                  0,
+                                );
                                 return typeof co2 === 'number'
                                   ? acc + co2
                                   : acc;
@@ -376,7 +437,9 @@ function EventDetailsPanel({
             </div>
           ) : selectedEvent?.participants.find(
               (participant) =>
-                participant.user.id === user?.id && !!participant.travelPlan,
+                participant.user.id === user?.id &&
+                !!participant.travelPlan &&
+                participant.travelPlan.length,
             ) ? (
             <div className={`flex flex-col gap-2 pt-2`}>
               <div className={`pt-2 flex flex-col gap-2`}>
@@ -385,9 +448,12 @@ function EventDetailsPanel({
                 >
                   Overview
                 </p>
-                {getOverviewContent()}
+                <div className={`flex flex-wrap gap-4`}>
+                  {getOverviewContent()}
+                </div>
               </div>
-              <div className={`pt-4`}>
+              <Separator orientation={'horizontal'} className={`my-4`} />
+              <div>
                 <p
                   className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
                 >
@@ -407,41 +473,45 @@ function EventDetailsPanel({
                 yKey={'value'}
               />
               <Separator orientation={'horizontal'} className={`my-4`} />
-              <div>
-                <p
-                  className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
-                >
-                  Carbon Emission Contribution Ratio
-                </p>
-                <p className={`text-sm italic text-gray-500 mt-2`}>
-                  This explains the Emissions of your Travel Plan&#39;s
-                  contribution to the Event.
-                </p>
-              </div>
-              <PercentagePieChart
-                data={calculatePersonalEmissionPercentageOnEvent(
-                  selectedEvent?.participants,
-                  user!.id,
-                )}
-              />
-              <Separator orientation={'horizontal'} className={`my-4`} />
-              <div>
-                <div>
-                  <p
-                    className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
-                  >
-                    Travel Modes Ratio
-                  </p>
-                  <p className={`text-sm italic text-gray-500 mt-1`}>
-                    This explains the Travel Modes of Paticipant&#39;s declared
-                    to this Event.
-                  </p>
+              <div className={`flex gap-4 w-full`}>
+                <div className={`flex flex-col gap-4 w-1/2`}>
+                  <div>
+                    <p
+                      className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
+                    >
+                      Carbon Emission Contribution Ratio
+                    </p>
+                    <p className={`text-sm italic text-gray-500 mt-2`}>
+                      This explains the Emissions of your Travel Plan&#39;s
+                      contribution to the Event.
+                    </p>
+                  </div>
+                  <PercentagePieChart
+                    data={calculatePersonalEmissionPercentageOnEvent(
+                      selectedEvent?.participants,
+                      user!.id,
+                    )}
+                  />
                 </div>
-                <PercentagePieChart
-                  data={calculateParticipantsTravelModePreferencesOnEvent(
-                    selectedEvent?.participants,
-                  )}
-                />
+                <Separator orientation={'vertical'} className={`my-4`} />
+                <div className={`flex flex-col gap-4 w-1/2`}>
+                  <div>
+                    <p
+                      className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
+                    >
+                      Travel Modes Ratio
+                    </p>
+                    <p className={`text-sm italic text-gray-500 mt-1`}>
+                      This explains the Travel Modes of Paticipant&#39;s
+                      declared to this Event.
+                    </p>
+                  </div>
+                  <PercentagePieChart
+                    data={calculateParticipantsTravelModePreferencesOnEvent(
+                      selectedEvent?.participants,
+                    )}
+                  />
+                </div>
               </div>
             </div>
           ) : (
@@ -469,16 +539,16 @@ function EventDetailsPanel({
               {selectedEvent?.location.name}
             </div>
             <Button
-              onClick={() => toggleRoutesPanel?.()}
+              onClick={() => toggleTravelPlansPanel?.()}
               variant={'ghost'}
               className="border-gray-400 border px-2 py-0 mr-1 h-6"
             >
-              {isRoutesPanelVisible ? (
+              {isTravelPlansPanelVisible ? (
                 <ChevronsRight size={8} />
               ) : (
                 <ChevronsLeft size={8} />
               )}
-              {isRoutesPanelVisible
+              {isTravelPlansPanelVisible
                 ? 'Hide Travel Planning'
                 : 'Show Travel Planning'}
             </Button>

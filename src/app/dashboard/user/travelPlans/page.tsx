@@ -11,16 +11,16 @@ import { TravelProvider } from '@/contexts/travel-context';
 import MapContainer from '@/components/userPage/maps/map.view';
 import EventsListPanel from '@/components/userPage/events-list-panel.view';
 import EventDetailsPanel from '@/components/userPage/event-details-panel.view';
-import RoutesPanel from '@/components/userPage/maps/routes-panel.view';
+import { TravelPlansPanel } from '@/components/userPage/maps/travel-plans-panel.view';
 
 export default function UserEvents() {
   const [googleMaps, setGoogleMaps] = React.useState<
     typeof google.maps | undefined
   >(undefined);
-  const [showRoutePanel, setShowRoutePanel] = React.useState(true);
+  const [showTravelPlansPanel, setShowTravelPlansPanel] = React.useState(true);
 
-  const toggleShowRoutePanel = React.useCallback(() => {
-    setShowRoutePanel((prevState) => !prevState);
+  const toggleShowTravelPlansPanel = React.useCallback(() => {
+    setShowTravelPlansPanel((prevState) => !prevState);
   }, []);
 
   React.useEffect(() => {
@@ -55,15 +55,15 @@ export default function UserEvents() {
                   <EventsListPanel />
                   <Separator orientation="vertical" />
                   <EventDetailsPanel
-                    isRoutesPanelVisible={showRoutePanel}
-                    toggleRoutesPanel={toggleShowRoutePanel}
+                    isTravelPlansPanelVisible={showTravelPlansPanel}
+                    toggleTravelPlansPanel={toggleShowTravelPlansPanel}
                   />
                 </div>
               </div>
               <div
-                className={`${showRoutePanel ? 'w-[27vw] border-l' : 'w-0 border-0'} h-[calc(100vh-4rem)] flex border-gray-200 transition-all duration-300 ease-in-out`}
+                className={`${showTravelPlansPanel ? 'w-[27vw] border-l' : 'w-0 border-0'} h-[calc(100vh-4rem)] flex border-gray-200 transition-all duration-300 ease-in-out`}
               >
-                {showRoutePanel && <RoutesPanel />}
+                {showTravelPlansPanel && <TravelPlansPanel />}
               </div>
             </div>
           </TravelProvider>

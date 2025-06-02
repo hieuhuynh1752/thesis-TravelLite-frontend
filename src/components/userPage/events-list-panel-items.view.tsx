@@ -44,6 +44,8 @@ const EventsListPanelItems = ({
   } = useUserContext();
   const { resetAllTravelLogs } = useTravelContext();
 
+  console.log(eventsList);
+
   const handleEvents = React.useCallback(
     (showAll?: boolean) => {
       console.log(allEvents);

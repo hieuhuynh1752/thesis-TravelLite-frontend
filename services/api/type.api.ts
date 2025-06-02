@@ -50,7 +50,7 @@ export interface EventParticipantType {
   assignedAt: string;
   status: EventParticipantStatus;
   userId?: number;
-  travelPlan?: TravelPlanType;
+  travelPlan?: TravelPlanType[];
 }
 
 export interface PlaceType {

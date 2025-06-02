@@ -141,6 +141,9 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
           origin: leg.start_address,
           destination: leg.end_address,
           travelMode: rawResult?.request.travelMode,
+          plannedAt:
+            rawResult?.routes[index].legs[0].departure_time?.value ??
+            new Date(),
           routeDetails: {
             ...rawResult,
             routes: [{ ...rawResult?.routes[index] }],

@@ -58,7 +58,6 @@ const YAxisLeftTick = ({
     </Text>
   );
 };
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 export function HorizontalBarChart<T extends Record<string, any>>({
   data,
   xKey,

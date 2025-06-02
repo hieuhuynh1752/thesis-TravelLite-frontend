@@ -61,7 +61,7 @@ const ParticipantChip = (props: ParticipantChipProps) => {
       <Tooltip>
         <TooltipTrigger>
           <div
-            className={`flex gap-2 ${props.isHost ? 'border-primary pl-1 pr-2' : props.hideClearButton ? 'border-primary pl-1 pr-2' : 'border-gray-400 px-1'} rounded-full border py-1 items-center text-sm`}
+            className={`flex gap-2 ${props.isHost ? 'border-primary pl-1 pr-2' : props.hideClearButton ? 'border-primary pl-1 pr-2' : 'border-gray-400 px-1'} rounded-full border py-1 items-center text-sm ${props.hasPlan ? 'bg-muted/30 font-semibold text-primary' : ''}`}
           >
             <div
               className={`rounded-full text-white w-5 flex justify-center ${props.isHost ? 'bg-gray-500 border-gray-500 italic w-full px-2' : 'bg-green-500'}`}

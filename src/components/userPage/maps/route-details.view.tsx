@@ -113,7 +113,7 @@ const RouteDetails = ({
       {/*    </div>*/}
       {/*  ))}*/}
       {/*</div>*/}
-      <ol className="flex flex-col space-y-4 overflow-y-auto">
+      <ol className="flex flex-col space-y-4 pb-4 overflow-y-auto">
         {travelPlan.travelSteps.map((step, index, allSteps) => (
           <li
             key={index}
@@ -187,7 +187,7 @@ const RouteDetails = ({
         ))}
       </ol>
       {!isDetailsSaved && (
-        <div className={`flex gap-4 px-2 justify-end`}>
+        <div className={`flex gap-4 px-2 pb-4 justify-end`}>
           <Button onClick={() => handleBackButton?.()} variant={'secondary'}>
             Cancel
           </Button>

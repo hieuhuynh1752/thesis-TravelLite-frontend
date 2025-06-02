@@ -1,17 +1,19 @@
 'use client';
 import React, { createContext, useContext, useState } from 'react';
 
+export type SelectedRouteType = {
+  routes?: google.maps.DirectionsResult;
+  index: number;
+  hashedId?: string;
+};
+
 export type DirectionType = {
   origin: string;
   destination: string;
   arrivalTime?: Date;
   departureTime?: Date;
-};
-
-type SelectedRouteType = {
-  routes?: google.maps.DirectionsResult;
-  index: number;
-  hashedId?: string;
+  travelMode?: google.maps.TravelMode;
+  selectedRoute?: SelectedRouteType;
 };
 
 export interface FlattenedTravelStep {
@@ -38,9 +40,11 @@ export interface FlattenedSelectedRoute {
   origin: string;
   destination: string;
   travelMode: google.maps.TravelMode;
+  plannedAt: Date;
   routeDetails: google.maps.DirectionsResult;
   travelSteps: FlattenedTravelStep[];
   totalCo2?: number;
+  id?: number;
 }
 
 type TravelContextType = {
@@ -48,8 +52,14 @@ type TravelContextType = {
   setSearchDirection: React.Dispatch<
     React.SetStateAction<DirectionType | undefined>
   >;
+  directionsCollection?: DirectionType[];
+  setDirectionsCollection?: React.Dispatch<
+    React.SetStateAction<DirectionType[] | undefined>
+  >;
   originValue: string;
   setOriginValue: React.Dispatch<React.SetStateAction<string>>;
+  destinationValue: string;
+  setDestinationValue: React.Dispatch<React.SetStateAction<string>>;
   responses: google.maps.DirectionsResult[];
   setResponses: (responses: google.maps.DirectionsResult[]) => void;
   selectedRoute: SelectedRouteType;
@@ -86,8 +96,12 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [originValue, setOriginValue] = useState('');
+  const [destinationValue, setDestinationValue] = useState('');
   const [searchDirection, setSearchDirection] = useState<
     DirectionType | undefined
+  >(undefined);
+  const [directionsCollection, setDirectionsCollection] = useState<
+    DirectionType[] | undefined
   >(undefined);
   const [responses, setResponses] = React.useState<
     google.maps.DirectionsResult[]
@@ -121,7 +135,9 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({
     setSavedTravelPlan(undefined);
     setResponses([]);
     setOriginValue('');
+    setDestinationValue('');
     setSearchDirection(undefined);
+    setDirectionsCollection(undefined);
   }, []);
 
   return (
@@ -129,8 +145,12 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         originValue,
         setOriginValue,
+        destinationValue,
+        setDestinationValue,
         searchDirection,
         setSearchDirection,
+        directionsCollection,
+        setDirectionsCollection,
         responses,
         setResponses,
         selectedTravelMode,

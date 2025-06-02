@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import { useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
-import { useTravelContext } from '@/contexts/travel-context';
+import { SelectedRouteType, useTravelContext } from '@/contexts/travel-context';
 
 type DirectionsProps = {
   origin?: string;
@@ -9,6 +9,7 @@ type DirectionsProps = {
   travelMode?: google.maps.TravelMode;
   arrivalTime?: Date;
   departureTime?: Date;
+  plainRoute?: SelectedRouteType;
 };
 
 const Directions: React.FC<DirectionsProps> = ({
@@ -16,6 +17,7 @@ const Directions: React.FC<DirectionsProps> = ({
   destination,
   arrivalTime,
   departureTime,
+  plainRoute,
 }) => {
   const map = useMap();
   const routesLibrary = useMapsLibrary('routes');
@@ -30,6 +32,7 @@ const Directions: React.FC<DirectionsProps> = ({
     selectedRoute,
     setSelectedRoute,
     setUnavailableTravelModes,
+    directionsCollection,
   } = useTravelContext();
 
   const travelModes = React.useMemo<google.maps.TravelMode[]>(
@@ -100,7 +103,9 @@ const Directions: React.FC<DirectionsProps> = ({
         console.error('Error fetching directions:', error);
       }
     };
-    fetchRoutesForAllModes();
+    if (!plainRoute) {
+      fetchRoutesForAllModes();
+    }
   }, [
     setSelectedRoute,
     directionsService,
@@ -112,19 +117,41 @@ const Directions: React.FC<DirectionsProps> = ({
     setUnavailableTravelModes,
     arrivalTime,
     departureTime,
+    plainRoute,
   ]);
 
   // Update direction route
   React.useEffect(() => {
-    if (!directionsRenderer || !map || responses.length === 0) return;
+    if (
+      !directionsRenderer ||
+      !map ||
+      (responses.length === 0 && directionsCollection?.length === 0)
+    )
+      return;
     if (selectedRoute.routes) {
       directionsRenderer.setMap(map);
       directionsRenderer.setDirections(selectedRoute.routes ?? null);
       directionsRenderer.setRouteIndex(selectedRoute.index);
+    } else if (plainRoute) {
+      directionsRenderer.setMap(map);
+      directionsRenderer.setDirections(plainRoute.routes ?? null);
+      directionsRenderer.setRouteIndex(plainRoute.index);
     } else {
       console.warn('Invalid directions result; skipping render.');
     }
-  }, [selectedRoute, directionsRenderer, responses, map]);
+
+    return () => {
+      directionsRenderer.setMap(null);
+      setDirectionsRenderer(undefined);
+    };
+  }, [
+    selectedRoute,
+    directionsRenderer,
+    responses,
+    map,
+    directionsCollection?.length,
+    plainRoute,
+  ]);
 
   // if (!leg) return null;
 

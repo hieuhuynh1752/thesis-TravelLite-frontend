@@ -6,14 +6,31 @@ import Directions from './direction.view';
 import { useTravelContext } from '@/contexts/travel-context';
 import { useUserContext } from '@/contexts/user-context';
 import { MarkerWithInfoWindow } from '@/components/userPage/maps/custom-marker.view';
+import Route from '@/components/userPage/maps/route';
+import { RoutesApi } from '@/components/userPage/maps/routes-api';
 
 const MapContainer: React.FC = () => {
-  const { searchDirection, savedTravelPlan } = useTravelContext();
+  const { searchDirection, savedTravelPlan, directionsCollection } =
+    useTravelContext();
   const { selectedEvent } = useUserContext();
+  const apiClient = new RoutesApi(
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '',
+  );
+  const appearance = {
+    walkingPolylineColor: '#D8EAD9',
+    bicyclingPolylineColor: '#81C784',
+    transitFallbackPolylineColor: '#2E7D32',
+    defaultPolylineColor: '#9a1e45',
+    stepMarkerFillColor: '#fff',
+    stepMarkerBorderColor: '#000000',
+  };
+
+  console.log(directionsCollection);
 
   const location = React.useMemo(() => {
     if (
-      !searchDirection &&
+      (!searchDirection ||
+        (!searchDirection.arrivalTime && !searchDirection.departureTime)) &&
       selectedEvent &&
       selectedEvent.location &&
       !savedTravelPlan
@@ -37,9 +54,8 @@ const MapContainer: React.FC = () => {
           defaultZoom={12}
           gestureHandling={'greedy'}
           mapId={'bf51a910020fa25a'}
-          disableDefaultUI
         >
-          {location && !searchDirection && (
+          {location && (
             <>
               <MarkerWithInfoWindow
                 position={location}
@@ -55,6 +71,43 @@ const MapContainer: React.FC = () => {
               departureTime={searchDirection.departureTime}
             />
           )}
+          {(!searchDirection ||
+            (!searchDirection.arrivalTime && !searchDirection.departureTime)) &&
+            directionsCollection &&
+            directionsCollection.map((direction, index) => {
+              return (
+                <Route
+                  key={index}
+                  // origin={direction.origin}
+                  // destination={direction.destination}
+                  // travelMode={direction.travelMode}
+                  // plainRoute={direction.selectedRoute}
+                  apiClient={apiClient}
+                  origin={
+                    direction.selectedRoute?.routes?.routes[0].legs[0]
+                      .start_location
+                  }
+                  destination={
+                    direction.selectedRoute?.routes?.routes[0].legs[0]
+                      .end_location
+                  }
+                  routeOptions={{
+                    travelMode:
+                      direction.travelMode === google.maps.TravelMode.DRIVING
+                        ? 'DRIVE'
+                        : direction.travelMode ===
+                            google.maps.TravelMode.WALKING
+                          ? 'WALK'
+                          : direction.travelMode ===
+                              google.maps.TravelMode.BICYCLING
+                            ? 'BICYCLE'
+                            : 'DRIVE',
+                    computeAlternativeRoutes: false,
+                  }}
+                  appearance={appearance}
+                />
+              );
+            })}
         </Map>
       </div>
     </div>

@@ -236,10 +236,10 @@ export default function OverviewTravelHistoryReport({
           )}
         </div>
         <div className={`w-1/2 flex flex-col gap-4`}>
-          <div className="flex h-fit w-full max-w-3xl rounded-xl bg-muted/50">
+          <div className="flex h-fit w-full rounded-xl bg-muted/50">
             <TravelHistoryChart data={travelHistoryChartData} />
           </div>
-          <div className="flex h-fit w-full max-w-3xl rounded-xl bg-muted/50">
+          <div className="flex h-fit w-full rounded-xl bg-muted/50">
             <TravelPreferencesHistoryChart
               chartData={travelPreferencesChartData}
               totalTravels={travelHistoryData?.length}

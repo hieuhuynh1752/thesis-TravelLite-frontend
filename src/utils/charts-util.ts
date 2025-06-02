@@ -42,122 +42,125 @@ export const getTravelHistoryData = (
   events: EventParticipantType[],
   filterBy: { month?: string; year?: string } = {},
 ) => {
+  // We’ll collect occurrences of recurring events by their occurrence key.
   const recursedEvents: Map<EventOccurrence, TravelHistoryDataType[]> =
     new Map();
-  let data: TravelHistoryDataType[] | undefined = events
-    .filter((event) => !!event.travelPlan && isPast(event.event.dateTime))
-    .map((eventWithTravelPlan) => {
-      const dataToRender: TravelHistoryDataType = {
-        co2: eventWithTravelPlan.travelPlan?.totalCo2,
-        date: eventWithTravelPlan.event.dateTime,
-        title: eventWithTravelPlan.event.title,
-        location: eventWithTravelPlan.event.location.name,
-        occurrence: eventWithTravelPlan.event.occurrence,
-        user: eventWithTravelPlan.user,
 
-        travelMode: eventWithTravelPlan.travelPlan?.travelMode,
-      };
-      if (eventWithTravelPlan.event.occurrence !== EventOccurrence.SINGLE) {
-        if (recursedEvents.has(eventWithTravelPlan.event.occurrence)) {
-          const updatedRecursedEvents = recursedEvents.get(
-            eventWithTravelPlan.event.occurrence,
-          );
-          updatedRecursedEvents?.push(dataToRender);
-          recursedEvents.set(
-            eventWithTravelPlan.event.occurrence,
-            updatedRecursedEvents!,
-          );
-        } else {
-          recursedEvents.set(eventWithTravelPlan.event.occurrence, [
-            dataToRender,
-          ]);
+  // Step 1: flatMap over events, then over event.travelPlan (which is now an array).
+  // Only include plans where the event date is in the past.
+  let data: TravelHistoryDataType[] = events
+    .flatMap((participant) => {
+      // If there is no travelPlan array or the event date isn't past, return an empty array.
+      if (
+        !participant.travelPlan ||
+        !Array.isArray(participant.travelPlan) ||
+        !isPast(participant.event.dateTime)
+      ) {
+        return [];
+      }
+
+      // Otherwise, for each travelPlan item inside participant.travelPlan[], produce one TravelHistoryDataType.
+      return participant.travelPlan.map((onePlan) => {
+        const entry: TravelHistoryDataType = {
+          co2: onePlan.totalCo2,
+          date: participant.event.dateTime,
+          title: participant.event.title,
+          location: participant.event.location.name,
+          occurrence: participant.event.occurrence,
+          user: participant.user,
+          travelMode: onePlan.travelMode,
+        };
+
+        // If this event is recurring, stash it for later expansion.
+        if (participant.event.occurrence !== EventOccurrence.SINGLE) {
+          const occKey = participant.event.occurrence;
+          if (recursedEvents.has(occKey)) {
+            recursedEvents.get(occKey)!.push(entry);
+          } else {
+            recursedEvents.set(occKey, [entry]);
+          }
+        }
+
+        return entry;
+      });
+    })
+    // Filter out any “undefined” or empty pieces, though flatMap above should handle it.
+    .filter((x) => x !== undefined);
+
+  // Step 2: Expand all recurring‐event dates.
+  const toBeAddedEntries: TravelHistoryDataType[] = [];
+  for (const [occurrenceKey, baseEntries] of recursedEvents.entries()) {
+    for (const base of baseEntries) {
+      const originalDate = new Date(base.date!);
+
+      if (occurrenceKey === EventOccurrence.DAILY) {
+        const daysDiff = differenceInCalendarDays(new Date(), originalDate);
+        for (let j = 1; j <= daysDiff; j++) {
+          toBeAddedEntries.push({
+            ...base,
+            date: addDays(originalDate, j).toISOString(),
+          });
         }
       }
-      return dataToRender;
-    });
 
-  if (data) {
-    const toBeAddedEntries: TravelHistoryDataType[] = [];
-    for (const [key, value] of recursedEvents.entries()) {
-      for (let i = 0; i < value.length; i++) {
-        if (key === EventOccurrence.DAILY) {
-          for (
-            let j = 1;
-            j <= differenceInCalendarDays(new Date(), new Date(value[i].date!));
-            j++
-          ) {
-            toBeAddedEntries.push({
-              ...value[i],
-              date: addDays(new Date(value[i].date!), j).toISOString(),
-            });
-          }
+      if (occurrenceKey === EventOccurrence.WEEKLY) {
+        const weeksDiff = differenceInCalendarWeeks(new Date(), originalDate);
+        for (let j = 1; j <= weeksDiff; j++) {
+          toBeAddedEntries.push({
+            ...base,
+            date: addWeeks(originalDate, j).toISOString(),
+          });
         }
-        if (key === EventOccurrence.MONTHLY) {
-          for (
-            let j = 1;
-            j <=
-            differenceInCalendarMonths(new Date(), new Date(value[i].date!));
-            j++
-          ) {
-            toBeAddedEntries.push({
-              ...value[i],
-              date: addMonths(new Date(value[i].date!), j).toISOString(),
-            });
-          }
+      }
+
+      if (occurrenceKey === EventOccurrence.MONTHLY) {
+        const monthsDiff = differenceInCalendarMonths(new Date(), originalDate);
+        for (let j = 1; j <= monthsDiff; j++) {
+          toBeAddedEntries.push({
+            ...base,
+            date: addMonths(originalDate, j).toISOString(),
+          });
         }
-        if (key === EventOccurrence.WEEKLY) {
-          for (
-            let j = 1;
-            j <=
-            differenceInCalendarWeeks(new Date(), new Date(value[i].date!));
-            j++
-          ) {
-            toBeAddedEntries.push({
-              ...value[i],
-              date: addWeeks(new Date(value[i].date!), j).toISOString(),
-            });
-          }
-        }
-        if (key === EventOccurrence.YEARLY) {
-          for (
-            let j = 1;
-            j <=
-            differenceInCalendarYears(new Date(), new Date(value[i].date!));
-            j++
-          ) {
-            toBeAddedEntries.push({
-              ...value[i],
-              date: addYears(new Date(value[i].date!), j).toISOString(),
-            });
-          }
+      }
+
+      if (occurrenceKey === EventOccurrence.YEARLY) {
+        const yearsDiff = differenceInCalendarYears(new Date(), originalDate);
+        for (let j = 1; j <= yearsDiff; j++) {
+          toBeAddedEntries.push({
+            ...base,
+            date: addYears(originalDate, j).toISOString(),
+          });
         }
       }
     }
-    data = data.concat(toBeAddedEntries);
-    data.sort(
-      (itemA, itemB) =>
-        new Date(itemA.date!).getTime() - new Date(itemB.date!).getTime(),
-    );
-
-    // Apply filtering by month and/or year
-    data = data.filter((item) => {
-      const dateObj = parseISO(item.date!);
-      const matchesMonth = filterBy.month
-        ? dateObj.getMonth() + 1 === parseInt(filterBy.month)
-        : true;
-      const matchesYear = filterBy.year
-        ? dateObj.getFullYear().toString() === filterBy.year
-        : true;
-      return matchesMonth && matchesYear;
-    });
-
-    data = data.map((item) => {
-      return {
-        ...item,
-        date: format(parseISO(item.date!), 'MMM d yyyy'),
-      };
-    });
   }
+
+  // Merge the “expanded” occurrences back into the main array
+  data = data.concat(toBeAddedEntries);
+
+  // Step 3: Sort ascending by date
+  data.sort(
+    (a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime(),
+  );
+
+  // Step 4: Apply the month/year filter if provided
+  data = data.filter((item) => {
+    const dateObj = parseISO(item.date!);
+    const matchesMonth = filterBy.month
+      ? dateObj.getMonth() + 1 === parseInt(filterBy.month, 10)
+      : true;
+    const matchesYear = filterBy.year
+      ? dateObj.getFullYear().toString() === filterBy.year
+      : true;
+    return matchesMonth && matchesYear;
+  });
+
+  // Step 5: Re‐format each date string for display
+  data = data.map((item) => ({
+    ...item,
+    date: format(parseISO(item.date!), 'MMM d yyyy'),
+  }));
+
   return data;
 };
 
@@ -213,18 +216,26 @@ export const calculatePersonalEmissionRateOnEvent = (
   data: EventParticipantType[],
   userId: number,
 ): { name: string; value: number }[] => {
-  const output = [];
+  const output: { name: string; value: number }[] = [];
   const filteredData = data.filter((participant) => !!participant.travelPlan);
   output.push({
     name: 'You',
     value:
-      filteredData.find((participant) => participant.user.id === userId)
-        ?.travelPlan?.totalCo2 ?? 0,
+      filteredData
+        .find((participant) => participant.user.id === userId)
+        ?.travelPlan?.reduce((co2PerPlanAcc, plan) => {
+          const subCo2 = plan.totalCo2;
+          return co2PerPlanAcc + subCo2;
+        }, 0) ?? 0,
   });
   let totalCo2OfAllParticipants = 0;
   filteredData.forEach(
     (participant) =>
-      (totalCo2OfAllParticipants += participant.travelPlan?.totalCo2 ?? 0),
+      (totalCo2OfAllParticipants +=
+        participant.travelPlan?.reduce((co2PerPlanAcc, plan) => {
+          const subCo2 = plan.totalCo2;
+          return co2PerPlanAcc + subCo2;
+        }, 0) ?? 0),
   );
   output.push({
     name: 'Average',
@@ -241,17 +252,25 @@ export const calculatePersonalEmissionPercentageOnEvent = (
   data: EventParticipantType[],
   userId: number,
 ): { name: string; value: number }[] => {
-  const output = [];
+  const output: { name: string; value: number }[] = [];
   output.push({
     name: 'You',
     value:
-      data.find((participant) => participant.user.id === userId)?.travelPlan
-        ?.totalCo2 ?? 0,
+      data
+        .find((participant) => participant.user.id === userId)
+        ?.travelPlan?.reduce((co2PerPlanAcc, plan) => {
+          const subCo2 = plan.totalCo2;
+          return co2PerPlanAcc + subCo2;
+        }, 0) ?? 0,
   });
   let totalCo2OfAllParticipants = 0;
   data.forEach((participant) => {
     if (participant.user.id !== userId) {
-      totalCo2OfAllParticipants += participant.travelPlan?.totalCo2 ?? 0;
+      totalCo2OfAllParticipants +=
+        participant.travelPlan?.reduce((co2PerPlanAcc, plan) => {
+          const subCo2 = plan.totalCo2;
+          return co2PerPlanAcc + subCo2;
+        }, 0) ?? 0;
     }
   });
   output.push({
@@ -267,7 +286,11 @@ export const calculateParticipantsEmissionRateOnEvent = (
   const output = data.map((participant) => {
     return {
       name: participant.user.name ?? '',
-      value: participant.travelPlan?.totalCo2 ?? 0,
+      value:
+        participant.travelPlan?.reduce((co2PerPlanAcc, plan) => {
+          const subCo2 = plan.totalCo2;
+          return co2PerPlanAcc + subCo2;
+        }, 0) ?? 0,
     };
   });
   return output;
@@ -277,15 +300,21 @@ export const calculateParticipantsTravelModePreferencesOnEvent = (
   data: EventParticipantType[],
 ) => {
   const travelModeCounts: Record<string, number> = {};
+
   data.forEach(({ travelPlan }) => {
-    if (travelPlan && travelPlan.travelMode) {
-      travelModeCounts[travelPlan.travelMode] =
-        (travelModeCounts[travelPlan.travelMode] || 0) + 1;
+    if (Array.isArray(travelPlan)) {
+      travelPlan.forEach((plan) => {
+        if (plan.travelMode) {
+          travelModeCounts[plan.travelMode] =
+            (travelModeCounts[plan.travelMode] || 0) + 1;
+        }
+      });
     }
   });
   const travelModeData = Object.keys(travelModeCounts).map((mode) => ({
-    name: mode.charAt(0) + String(mode).slice(1).toLowerCase(),
+    name: mode.charAt(0) + mode.slice(1).toLowerCase(),
     value: travelModeCounts[mode],
   }));
+
   return travelModeData;
 };
