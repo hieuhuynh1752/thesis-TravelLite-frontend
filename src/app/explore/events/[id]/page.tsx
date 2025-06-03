@@ -38,12 +38,12 @@ export default function EventDetailsPage() {
   const handleRegisterToEvent = React.useCallback(() => {
     if (!!userId && !!event && !!event.id) {
       participantSubscribeToEvent({ userId, eventId: event.id });
-      getSinglePublicEvent(Number.parseInt(params.id as string)).then((data) =>
+      getSinglePublicEvent(Number.parseInt(params?.id as string)).then((data) =>
         setEvent(data),
       );
       toast(`You have registered to the event: ${event.title}`);
     }
-  }, [event, params.id, userId]);
+  }, [event, params?.id, userId]);
 
   const handleGetUserData = React.useCallback(() => {
     if (!!userId) {
@@ -62,10 +62,10 @@ export default function EventDetailsPage() {
   React.useEffect(() => {
     getMe().then((userId) => setUserId(userId));
     handleGetUserData();
-    getSinglePublicEvent(Number.parseInt(params.id as string)).then((data) =>
+    getSinglePublicEvent(Number.parseInt(params?.id as string)).then((data) =>
       setEvent(data),
     );
-  }, [handleGetUserData, params.id]);
+  }, [handleGetUserData, params?.id]);
 
   React.useEffect(() => {
     const interval = setInterval(() => {

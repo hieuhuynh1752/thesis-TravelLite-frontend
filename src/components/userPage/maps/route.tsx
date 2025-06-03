@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   AdvancedMarker,
   AdvancedMarkerAnchorPoint,
-  useMap,
 } from '@vis.gl/react-google-maps';
 
 import { Polyline } from './polyline';
-import { RoutesApi } from './routes-api';
 
 const defaultAppearance = {
   walkingPolylineColor: '#D8EAD9',
@@ -20,41 +18,16 @@ const defaultAppearance = {
 type Appearance = typeof defaultAppearance;
 
 export type RouteProps = {
-  apiClient: RoutesApi;
+  // apiClient: RoutesApi;
   origin?: google.maps.LatLng;
   destination?: google.maps.LatLng;
+  route: any;
   routeOptions?: any;
   appearance?: Partial<Appearance>;
 };
 
 const Route = (props: RouteProps) => {
-  const { apiClient, origin, destination, routeOptions } = props;
-
-  const [route, setRoute] = useState<any>(null);
-
-  const map = useMap();
-  useEffect(() => {
-    if (!map || !origin || !destination) return;
-    console.log(origin);
-    apiClient.computeRoutes(origin, destination, routeOptions).then((res) => {
-      // we're only interested in the first result for this case
-      const [route] = res.routes;
-
-      // store in state and trigger rerendering
-      setRoute(route);
-
-      // fit map to the viewport returned from the API
-      const { high, low } = route.viewport;
-      const bounds: google.maps.LatLngBoundsLiteral = {
-        north: high.latitude,
-        south: low.latitude,
-        east: high.longitude,
-        west: low.longitude,
-      };
-
-      map.fitBounds(bounds);
-    });
-  }, [origin, destination, routeOptions, map, apiClient]);
+  const { route, origin, destination } = props;
 
   if (!route) return null;
 
@@ -62,15 +35,17 @@ const Route = (props: RouteProps) => {
   // We now want to create a visualization for the steps in that leg.
   const routeSteps: any[] = route.legs[0].steps;
 
+  console.log(route.legs[0]);
+
   const appearance = { ...defaultAppearance, ...props.appearance };
 
   // Every step of the route is visualized using a polyline (see ./polyline.tsx);
   // color and weight depend on the travel mode. For public transit lines
   // with established colors, the official color will be used.
   const polylines = routeSteps.map((step, index) => {
-    const isWalking = step.travelMode === 'WALK';
-    const isBicycling = step.travelMode === 'BICYCLE';
-    const isTransit = step.travelMode === 'TRANSIT';
+    const isWalking = step.travel_mode === google.maps.TravelMode.WALKING;
+    const isBicycling = step.travel_mode === google.maps.TravelMode.BICYCLING;
+    const isTransit = step.travel_mode === google.maps.TravelMode.TRANSIT;
     const color = isWalking
       ? appearance.walkingPolylineColor
       : isBicycling
@@ -79,11 +54,10 @@ const Route = (props: RouteProps) => {
           ? (step?.transitDetails?.transitLine?.color ??
             appearance.transitFallbackPolylineColor)
           : appearance.defaultPolylineColor;
-
     return (
       <Polyline
         key={`${index}-polyline`}
-        encodedPath={step.polyline.encodedPolyline}
+        encodedPath={step.polyline.points}
         strokeWeight={isWalking ? 2 : 6}
         strokeColor={color}
       />
@@ -103,8 +77,8 @@ const Route = (props: RouteProps) => {
 
   const stepMarkers = routeSteps.slice(1).map((step, index) => {
     const position = {
-      lat: step.startLocation.latLng.latitude,
-      lng: step.startLocation.latLng.longitude,
+      lat: step.start_location.lat,
+      lng: step.start_location.lng,
     };
 
     return (

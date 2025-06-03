@@ -4,11 +4,18 @@ import GoogleMapsAutocomplete from '@/components/userPage/maps/places-autocomple
 import { useUserContext } from '@/contexts/user-context';
 import { ArrowLeft, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DirectionType, useTravelContext } from '@/contexts/travel-context';
+import {
+  DirectionType,
+  FlattenedSelectedFlight,
+  isFlight,
+  useTravelContext,
+} from '@/contexts/travel-context';
 import RouteOptionList from '@/components/userPage/maps/route-option-list.view';
 import {
+  createFlightPlan,
   createTravelPlan,
   updateTravelPlanById,
+  updateTravelPlanToFlightById,
 } from '../../../../services/api/travel-plan.api';
 import RouteDetails from '@/components/userPage/maps/route-details.view';
 import { Separator } from '@/components/ui/separator';
@@ -30,6 +37,7 @@ import {
 import { cn } from '@/lib/utils';
 import { format, setHours, setMinutes } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
+import { AirportDetails } from '../../../../services/api/type.api';
 
 interface RoutePanelProps {
   handleSaveTravelRoute?: () => void;
@@ -43,6 +51,8 @@ const RoutesPanel = (props: RoutePanelProps) => {
     setSearchDirection,
     flattenedSelectedRoute,
     setFlattenedSelectedRoute,
+    selectedFlight,
+    setSelectedFlight,
     setSavedTravelPlan,
     savedTravelPlan,
     setIsEditingTravelPlan,
@@ -152,23 +162,10 @@ const RoutesPanel = (props: RoutePanelProps) => {
 
   const handleRouteDetailsBackButton = React.useCallback(() => {
     setFlattenedSelectedRoute?.(undefined);
-  }, [setFlattenedSelectedRoute]);
-
-  // const handleLoadTravelRoute = React.useCallback(async () => {
-  //   if (eventParticipantId) {
-  //     try {
-  //       const data = await getTravelPlanByParticipant(eventParticipantId);
-  //       if (data) {
-  //         setSavedTravelPlan?.(data);
-  //       } else {
-  //         setSavedTravelPlan?.(undefined);
-  //       }
-  //     } catch (error) {
-  //       console.log(error);
-  //       setSavedTravelPlan?.(undefined);
-  //     }
-  //   }
-  // }, [eventParticipantId, setSavedTravelPlan]);
+    if (selectedFlight) {
+      setSelectedFlight?.(undefined);
+    }
+  }, [selectedFlight, setFlattenedSelectedRoute, setSelectedFlight]);
 
   const handleUpdateEditSavedTravelPlan = React.useCallback(
     (newState: boolean) => {
@@ -181,17 +178,19 @@ const RoutesPanel = (props: RoutePanelProps) => {
       ) {
         setSearchDirection(undefined);
         setOriginValue('');
-        directionRendererRef.current = new google.maps.DirectionsRenderer({
-          map,
-          directions: savedTravelPlan.routeDetails,
-        });
+        if (!isFlight(savedTravelPlan)) {
+          directionRendererRef.current = new google.maps.DirectionsRenderer({
+            map,
+            directions: savedTravelPlan.routeDetails,
+          });
+        }
       }
       handleRouteDetailsBackButton();
     },
     [
       setIsEditingTravelPlan,
       map,
-      savedTravelPlan?.routeDetails,
+      savedTravelPlan,
       handleRouteDetailsBackButton,
       setSearchDirection,
       setOriginValue,
@@ -199,17 +198,43 @@ const RoutesPanel = (props: RoutePanelProps) => {
   );
 
   const handleSaveTravelRoute = React.useCallback(async () => {
-    if (eventParticipantId && flattenedSelectedRoute) {
-      const data = savedTravelPlan
-        ? await updateTravelPlanById(
-            savedTravelPlan.id!,
-            flattenedSelectedRoute,
-          )
-        : await createTravelPlan({
-            ...flattenedSelectedRoute,
-            eventParticipantId,
-          });
-      setSavedTravelPlan?.(data);
+    if (eventParticipantId) {
+      if (flattenedSelectedRoute) {
+        const data = savedTravelPlan
+          ? await updateTravelPlanById(
+              savedTravelPlan.id!,
+              flattenedSelectedRoute,
+            )
+          : await createTravelPlan({
+              ...flattenedSelectedRoute,
+              eventParticipantId,
+            });
+        setSavedTravelPlan?.(data);
+      } else if (selectedFlight) {
+        const flattenedSelectedFlight: FlattenedSelectedFlight = {
+          origin:
+            selectedFlight.origin.name +
+            `(${selectedFlight.origin.airport?.iataCode})`,
+          destination:
+            selectedFlight.destination.name +
+            `(${selectedFlight.destination.airport?.iataCode})`,
+          travelMode: 'FLYING',
+          plannedAt: selectedFlight.departureTime,
+          routeDetails: selectedFlight,
+          travelSteps: [],
+          totalCo2: selectedFlight.details.carbon_emissions.this_flight / 1000,
+        };
+        const data = savedTravelPlan
+          ? await updateTravelPlanToFlightById(
+              savedTravelPlan.id!,
+              flattenedSelectedFlight,
+            )
+          : await createFlightPlan({
+              ...flattenedSelectedFlight,
+              eventParticipantId,
+            });
+        setSavedTravelPlan?.(data);
+      }
       handleUpdateEditSavedTravelPlan(false);
       props.handleSaveTravelRoute?.();
       resetAllTravelLogs();
@@ -218,39 +243,52 @@ const RoutesPanel = (props: RoutePanelProps) => {
   }, [
     eventParticipantId,
     flattenedSelectedRoute,
-    savedTravelPlan,
-    setSavedTravelPlan,
+    selectedFlight,
     handleUpdateEditSavedTravelPlan,
     props,
     resetAllTravelLogs,
+    savedTravelPlan,
+    setSavedTravelPlan,
   ]);
 
   const handleOriginSelect = React.useCallback(
-    (place: google.maps.places.PlaceResult | null) => {
+    (
+      place: google.maps.places.PlaceResult | null,
+      airport?: AirportDetails,
+    ) => {
       directionRendererRef.current?.setMap(null);
       setSearchDirection((prevState) => {
         return {
           ...prevState,
-          origin: place!.place_id ?? '',
-          destination: prevState?.destination ?? '',
+          origin: {
+            id: place?.place_id ?? '',
+            name: place?.name,
+            airport: airport,
+          },
         };
       });
-      setOriginValue(place?.formatted_address ?? '');
+      setOriginValue(place?.name ?? '');
     },
     [setOriginValue, setSearchDirection],
   );
 
   const handleDestinationSelect = React.useCallback(
-    (place: google.maps.places.PlaceResult | null) => {
+    (
+      place: google.maps.places.PlaceResult | null,
+      airport?: AirportDetails,
+    ) => {
       directionRendererRef.current?.setMap(null);
       setSearchDirection((prevState) => {
         return {
           ...prevState,
-          origin: prevState?.origin ?? '',
-          destination: place!.place_id ?? '',
+          destination: {
+            id: place?.place_id ?? '',
+            name: place?.name,
+            airport: airport,
+          },
         };
       });
-      setDestinationValue(place?.formatted_address ?? '');
+      setDestinationValue(place?.name ?? '');
     },
     [setDestinationValue, setSearchDirection],
   );
@@ -275,10 +313,12 @@ const RoutesPanel = (props: RoutePanelProps) => {
         directionRendererRef.current.setMap(null);
       }
 
-      directionRendererRef.current = new google.maps.DirectionsRenderer({
-        map,
-        directions: savedTravelPlan.routeDetails,
-      });
+      if (!isFlight(savedTravelPlan)) {
+        directionRendererRef.current = new google.maps.DirectionsRenderer({
+          map,
+          directions: savedTravelPlan.routeDetails,
+        });
+      }
     }
     return () => {
       if (directionRendererRef.current) {
@@ -289,11 +329,12 @@ const RoutesPanel = (props: RoutePanelProps) => {
   }, [map, savedTravelPlan, isEditingEvent]);
 
   return !savedTravelPlan || (savedTravelPlan && isEditingTravelPlan) ? (
-    flattenedSelectedRoute ? (
+    flattenedSelectedRoute || selectedFlight ? (
       <RouteDetails
         travelPlan={flattenedSelectedRoute}
         handleBackButton={handleRouteDetailsBackButton}
         handleSaveTravelRoute={handleSaveTravelRoute}
+        flightPlan={selectedFlight}
       />
     ) : (
       <div className="flex flex-grow flex-col gap-2">
@@ -330,7 +371,6 @@ const RoutesPanel = (props: RoutePanelProps) => {
           />
           <Separator orientation={'horizontal'} />
           <div className={`flex gap-2 items-center`}>
-            <div className={`font-semibold`}>Options:</div>
             <Select
               value={timingOptions}
               onValueChange={handleTimingOptionsChange}
@@ -344,39 +384,39 @@ const RoutesPanel = (props: RoutePanelProps) => {
                 <SelectItem value={'arriveBy'}>Arrive by</SelectItem>
               </SelectContent>
             </Select>
+            {timingOptions !== 'leaveNow' && (
+              <>
+                <TimePicker
+                  id={'time'}
+                  value={timeValue}
+                  onTimeChange={handleTimeChange}
+                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={'outline'}
+                      className={cn(
+                        'w-full justify-start text-left font-normal',
+                        !date && 'text-muted-foreground',
+                      )}
+                      size={'sm'}
+                    >
+                      <CalendarIcon size={14} />{' '}
+                      {date ? format(date, 'PPP') : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={handleDaySelect}
+                      disabled={{ before: new Date() }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </>
+            )}
           </div>
-          {timingOptions !== 'leaveNow' && (
-            <div className={`flex gap-2`}>
-              <TimePicker
-                id={'time'}
-                value={timeValue}
-                onTimeChange={handleTimeChange}
-              />
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={'outline'}
-                    className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !date && 'text-muted-foreground',
-                    )}
-                    size={'sm'}
-                  >
-                    <CalendarIcon size={14} />{' '}
-                    {date ? format(date, 'PPP') : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={handleDaySelect}
-                    disabled={{ before: new Date() }}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          )}
         </div>
         <Separator orientation={'horizontal'} />
         <RouteOptionList />
@@ -384,9 +424,12 @@ const RoutesPanel = (props: RoutePanelProps) => {
     )
   ) : (
     <RouteDetails
-      travelPlan={savedTravelPlan}
+      travelPlan={!isFlight(savedTravelPlan) ? savedTravelPlan : undefined}
       handleUpdateEditSavedTravelPlan={() =>
         handleUpdateEditSavedTravelPlan(true)
+      }
+      flightPlan={
+        isFlight(savedTravelPlan) ? savedTravelPlan.routeDetails : undefined
       }
       isDetailsSaved={true}
     />

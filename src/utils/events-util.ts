@@ -32,7 +32,6 @@ export function getFilteredEvents(
       : true;
     return matchesMonth && matchesYear;
   });
-  console.log(data);
   return data;
 }
 

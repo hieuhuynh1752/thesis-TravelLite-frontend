@@ -488,7 +488,12 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
               </Command>
             </div>
             <div className="flex flex-wrap w-full max-w-sm items-center gap-1.5">
-              <ParticipantChip username={'You'} hideClearButton isHost />
+              <ParticipantChip
+                username={'You'}
+                hideClearButton
+                isHost
+                isInCreateEvent
+              />
               {participants.map((participant, index) => (
                 <ParticipantChip
                   key={index}
@@ -496,6 +501,7 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
                   onClearButtonClick={() =>
                     handleParticipantItemCancelClick(participant)
                   }
+                  isInCreateEvent
                 />
               ))}
             </div>

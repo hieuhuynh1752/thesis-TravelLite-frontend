@@ -17,10 +17,14 @@ interface ParticipantChipProps {
   isHost?: boolean;
   status?: EventParticipantStatus;
   hasPlan?: boolean;
+  isInCreateEvent?: boolean;
 }
 
 const ParticipantChip = (props: ParticipantChipProps) => {
   const getStatusIcon = React.useCallback(() => {
+    if (props.isInCreateEvent) {
+      return props.isHost ? 'Host' : props.username?.split('')[0];
+    }
     if (props.status === EventParticipantStatus.ACCEPTED) {
       return (
         <span
@@ -42,7 +46,13 @@ const ParticipantChip = (props: ParticipantChipProps) => {
         </span>
       );
     }
-  }, [props.status, props.hasPlan]);
+  }, [
+    props.isInCreateEvent,
+    props.status,
+    props.isHost,
+    props.username,
+    props.hasPlan,
+  ]);
 
   const getTooltipContents = React.useCallback(() => {
     if (props.status === EventParticipantStatus.ACCEPTED) {
@@ -55,6 +65,30 @@ const ParticipantChip = (props: ParticipantChipProps) => {
       return 'Declined';
     }
   }, [props.status, props.hasPlan]);
+
+  if (props.isInCreateEvent) {
+    return (
+      <div
+        className={`flex gap-2 ${props.isHost ? 'border-primary pl-1 pr-2' : props.hideClearButton ? 'border-primary pl-1 pr-2' : 'border-gray-400 px-1'} rounded-full border py-1 items-center text-sm ${props.hasPlan ? 'bg-muted/30 font-semibold text-primary' : ''}`}
+      >
+        <div
+          className={`rounded-full text-white w-5 flex justify-center ${props.isHost ? 'bg-gray-500 border-gray-500 italic w-full px-2' : 'bg-green-500'}`}
+        >
+          {getStatusIcon()}
+        </div>
+        <p>{props.username}</p>
+        {!props.hideClearButton && (
+          <Button
+            variant="ghost"
+            className="h-4 w-4 p-1 rounded-full bg-gray-100 hover:bg-gray-300"
+            onClick={props.onClearButtonClick}
+          >
+            <X size={12} />
+          </Button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider>

@@ -139,3 +139,49 @@ export function isTransitRoutes(
 export interface EnrichedStepsResponse {
   steps: Step[];
 }
+
+export interface AirportDetails {
+  iataCode: string;
+  lat: number;
+  lng: number;
+}
+
+export interface SerpAirportDetails {
+  name: string;
+  id: string;
+  time: string;
+}
+
+export interface SerpFlightDetails {
+  departure_airport: SerpAirportDetails;
+  arrival_airport: SerpAirportDetails;
+  duration: number;
+  airplane: string; //airplane model
+  airline: string;
+  airline_logo: string;
+  travel_class: string;
+  flight_number: string;
+  extensions: string[];
+  legroom: string;
+  overnight?: boolean;
+  often_delayed_by_over_30_min?: boolean;
+  plane_and_crew_by?: string;
+}
+
+export interface SerpFlightCarbonEmissionDetails {
+  this_flight: number;
+  typical_for_this_route: number;
+  difference_percent: number;
+}
+
+export interface FlightDetails {
+  flights: SerpFlightDetails[];
+  total_duration: number; //"Integer - Total minutes of all flights and layovers"
+  carbon_emissions: SerpFlightCarbonEmissionDetails;
+  price: number;
+  type: string;
+  airline_logo: string;
+  extensions?: string[];
+  departure_token?: string;
+  booking_token?: string;
+}

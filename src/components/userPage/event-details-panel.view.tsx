@@ -4,19 +4,13 @@ import { useUserContext } from '@/contexts/user-context';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import {
-  Bike,
-  Bus,
-  Car,
   ChevronsDown,
   ChevronsLeft,
   ChevronsRight,
   ChevronsUp,
-  CircleDotDashed,
   Clock,
-  Footprints,
   Leaf,
   MapPin,
-  Route,
   ScanText,
   UserCog,
   Users,
@@ -36,7 +30,8 @@ import { PercentagePieChart } from '@/components/ui/charts/percentage-pie-chart'
 import { DataTable } from '@/components/ui/table/data-table.view';
 import { EventOccurrence } from '../../../services/api/type.api';
 import { getTravelPlanByParticipant } from '../../../services/api/travel-plan.api';
-import { FlattenedSelectedRoute } from '@/contexts/travel-context';
+import { SavedTravelPlanType } from '@/contexts/travel-context';
+import TravelPlanOverviewCard from '@/components/userPage/travel-plan-overview-card.view';
 
 interface EventDetailsPanelProps {
   isTravelPlansPanelVisible?: boolean;
@@ -55,12 +50,7 @@ function EventDetailsPanel({
   const router = useRouter();
   const [eventDetailExpanded, setEventDetailExpanded] = React.useState(true);
   const [participantTravelDetails, setParticipantTravelDetails] =
-    React.useState<
-      | (FlattenedSelectedRoute & {
-          eventParticipantId: number;
-        })[]
-      | undefined
-    >();
+    React.useState<SavedTravelPlanType[] | undefined>();
 
   const getParticipantTravelDetails = React.useCallback(async () => {
     const participantInfo = selectedEvent?.participants.find(
@@ -77,91 +67,20 @@ function EventDetailsPanel({
     setEventDetailExpanded((prevState) => !prevState);
   }, []);
 
-  const getTravelMethodIcon = React.useCallback(
-    (travelMode: google.maps.TravelMode) => {
-      if (travelMode === google.maps.TravelMode.DRIVING) {
-        return <Car size={24} className="self-center" />;
-      }
-      if (travelMode === google.maps.TravelMode.TRANSIT) {
-        return <Bus size={24} className="self-center" />;
-      }
-      if (travelMode === google.maps.TravelMode.WALKING) {
-        return <Footprints size={24} className="self-center" />;
-      }
-      if (travelMode === google.maps.TravelMode.BICYCLING) {
-        return <Bike size={24} className="self-center" />;
-      }
-    },
-    [],
-  );
-
   const getOverviewContent = React.useCallback(() => {
     if (!participantTravelDetails) {
       return null;
     } else
       return participantTravelDetails.map((plan, index) => {
         return (
-          <div
+          <TravelPlanOverviewCard
             key={index}
-            className={`flex flex-col w-fit bg-white rounded h-fit border-primary border-2 cursor-pointer shadow-none transition-shadow duration-300 hover:shadow-md hover:shadow-muted`}
-          >
-            <div
-              className={`text-primary bg-muted/20 p-2 pl-4 inline-flex justify-between`}
-            >
-              <div
-                className={`capitalize text-lg font-semibold inline-flex items-baseline gap-2`}
-              >
-                {getTravelMethodIcon(plan.travelMode)}
-                {plan.travelMode.toLowerCase()}
-              </div>
-              <span
-                className={
-                  'text-md font-semibold text-primary bg-white px-2 rounded border border-primary'
-                }
-              >
-                {plan.totalCo2} kg CO₂e <Leaf className="inline" size={16} />
-              </span>
-            </div>
-            <div className={`p-2 flex flex-col gap-2`}>
-              <div>
-                <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
-                  <Clock size={16} className="self-center" />
-                  {'Date & Time: '}
-                </div>
-                {selectedEvent?.occurrence === EventOccurrence.DAILY
-                  ? 'Daily at ' + format(new Date(plan.plannedAt), 'hh:mm a')
-                  : format(new Date(plan.plannedAt), 'MMMM dd yyyy, hh:mm a')}
-              </div>
-              <div>
-                <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
-                  <CircleDotDashed size={16} className="self-center" />
-                  {'From: '}
-                </div>
-                {plan.origin.split(',')[0]}
-              </div>
-              <div>
-                <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
-                  <MapPin size={16} className="self-center" />
-                  {'To: '}
-                </div>{' '}
-                {plan.destination.split(',')[0]}
-              </div>
-              <div>
-                <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
-                  <Route size={16} className="self-center" />
-                  {'Distance: '}
-                </div>{' '}
-                {plan.routeDetails.routes[0].legs[0].distance?.text}
-              </div>
-            </div>
-          </div>
+            plan={plan}
+            selectedEvent={selectedEvent}
+          />
         );
       });
-  }, [
-    getTravelMethodIcon,
-    participantTravelDetails,
-    selectedEvent?.occurrence,
-  ]);
+  }, [participantTravelDetails, selectedEvent]);
 
   React.useEffect(() => {
     getParticipantTravelDetails();
@@ -226,7 +145,7 @@ function EventDetailsPanel({
           {selectedEvent
             ? format(
                 parseISO(selectedEvent.dateTime!),
-                'MMMM dd, yyyy, hh:mm a',
+                'MMMM do, yyyy, hh:mm a',
               )
             : ''}
         </div>

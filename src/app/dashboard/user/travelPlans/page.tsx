@@ -61,7 +61,7 @@ export default function UserEvents() {
                 </div>
               </div>
               <div
-                className={`${showTravelPlansPanel ? 'w-[27vw] border-l' : 'w-0 border-0'} h-[calc(100vh-4rem)] flex border-gray-200 transition-all duration-300 ease-in-out`}
+                className={`${showTravelPlansPanel ? 'w-[35vw] border-l' : 'w-0 border-0'} h-[calc(100vh-4rem)] flex border-gray-200 transition-all duration-300 ease-in-out`}
               >
                 {showTravelPlansPanel && <TravelPlansPanel />}
               </div>

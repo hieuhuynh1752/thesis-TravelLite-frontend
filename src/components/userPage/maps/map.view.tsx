@@ -3,19 +3,21 @@
 import * as React from 'react';
 import { Map } from '@vis.gl/react-google-maps';
 import Directions from './direction.view';
-import { useTravelContext } from '@/contexts/travel-context';
+import { isFlight, useTravelContext } from '@/contexts/travel-context';
 import { useUserContext } from '@/contexts/user-context';
 import { MarkerWithInfoWindow } from '@/components/userPage/maps/custom-marker.view';
 import Route from '@/components/userPage/maps/route';
-import { RoutesApi } from '@/components/userPage/maps/routes-api';
+import FlightRoute from '@/components/userPage/maps/flight-route';
 
 const MapContainer: React.FC = () => {
-  const { searchDirection, savedTravelPlan, directionsCollection } =
-    useTravelContext();
+  const {
+    searchDirection,
+    savedTravelPlan,
+    directionsCollection,
+    selectedFlightMode,
+  } = useTravelContext();
   const { selectedEvent } = useUserContext();
-  const apiClient = new RoutesApi(
-    process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '',
-  );
+
   const appearance = {
     walkingPolylineColor: '#D8EAD9',
     bicyclingPolylineColor: '#81C784',
@@ -25,12 +27,12 @@ const MapContainer: React.FC = () => {
     stepMarkerBorderColor: '#000000',
   };
 
-  console.log(directionsCollection);
+  console.log(searchDirection);
 
   const location = React.useMemo(() => {
     if (
       (!searchDirection ||
-        (!searchDirection.arrivalTime && !searchDirection.departureTime)) &&
+        (!searchDirection.origin && !searchDirection.destination)) &&
       selectedEvent &&
       selectedEvent.location &&
       !savedTravelPlan
@@ -72,17 +74,22 @@ const MapContainer: React.FC = () => {
             />
           )}
           {(!searchDirection ||
-            (!searchDirection.arrivalTime && !searchDirection.departureTime)) &&
+            (!searchDirection.origin && !searchDirection.destination)) &&
             directionsCollection &&
             directionsCollection.map((direction, index) => {
+              if (!direction.selectedRoute?.routes?.routes) {
+                return direction.origin && direction.destination ? (
+                  <FlightRoute
+                    key={index}
+                    origin={direction.origin}
+                    destination={direction.destination}
+                  />
+                ) : null;
+              }
               return (
                 <Route
                   key={index}
-                  // origin={direction.origin}
-                  // destination={direction.destination}
-                  // travelMode={direction.travelMode}
-                  // plainRoute={direction.selectedRoute}
-                  apiClient={apiClient}
+                  route={direction.selectedRoute?.routes?.routes[0]}
                   origin={
                     direction.selectedRoute?.routes?.routes[0].legs[0]
                       .start_location
@@ -92,22 +99,27 @@ const MapContainer: React.FC = () => {
                       .end_location
                   }
                   routeOptions={{
-                    travelMode:
-                      direction.travelMode === google.maps.TravelMode.DRIVING
-                        ? 'DRIVE'
-                        : direction.travelMode ===
-                            google.maps.TravelMode.WALKING
-                          ? 'WALK'
-                          : direction.travelMode ===
-                              google.maps.TravelMode.BICYCLING
-                            ? 'BICYCLE'
-                            : 'DRIVE',
+                    travelMode: direction.travelMode,
                     computeAlternativeRoutes: false,
                   }}
                   appearance={appearance}
                 />
               );
             })}
+          {selectedFlightMode &&
+            searchDirection?.origin &&
+            searchDirection.destination && (
+              <FlightRoute
+                origin={searchDirection.origin}
+                destination={searchDirection.destination}
+              />
+            )}
+          {!searchDirection && savedTravelPlan && isFlight(savedTravelPlan) && (
+            <FlightRoute
+              origin={savedTravelPlan.routeDetails.origin}
+              destination={savedTravelPlan.routeDetails.destination}
+            />
+          )}
         </Map>
       </div>
     </div>

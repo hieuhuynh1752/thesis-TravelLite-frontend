@@ -1,51 +1,60 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import { useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 
 type PolylineCustomProps = {
   encodedPath?: string;
+  pathCoordinates?: google.maps.LatLngLiteral[];
 };
 
 export type PolylineProps = google.maps.PolylineOptions & PolylineCustomProps;
 
 export const Polyline = (props: PolylineProps) => {
-  const { encodedPath, ...polylineOptions } = props;
+  const { pathCoordinates, encodedPath, ...polylineOptions } = props;
 
   const map = useMap();
   const geometryLibrary = useMapsLibrary('geometry');
   const mapsLibrary = useMapsLibrary('maps');
 
-  const [polyline, setPolyline] = useState<google.maps.Polyline | null>(null);
+  const [polyline, setPolyline] = React.useState<google.maps.Polyline | null>(
+    null,
+  );
 
-  // create poyline once available
-  useEffect(() => {
+  // 1) Create a new google.maps.Polyline instance once the Maps API is ready
+  React.useEffect(() => {
     if (!mapsLibrary) return;
-
-    setPolyline(new mapsLibrary.Polyline());
+    const pl = new mapsLibrary.Polyline();
+    setPolyline(pl);
   }, [mapsLibrary]);
 
-  // update options when changed
-  useEffect(() => {
+  // 2) Whenever google.maps.PolylineOptions change, update them
+  React.useEffect(() => {
     if (!polyline) return;
-
     polyline.setOptions(polylineOptions);
   }, [polyline, polylineOptions]);
 
-  // decode and update polyline with encodedPath
-  useEffect(() => {
-    if (!encodedPath || !geometryLibrary || !polyline) return;
+  // 3) If pathCoordinates is provided, use it; otherwise decode encodedPath
+  React.useEffect(() => {
+    if (!polyline) return;
 
-    polyline.setPath(geometryLibrary.encoding.decodePath(encodedPath));
-  }, [polyline, encodedPath, geometryLibrary]);
+    if (Array.isArray(pathCoordinates) && pathCoordinates.length > 0) {
+      // Directly set the array of {lat, lng}
+      polyline.setPath(pathCoordinates);
+    } else if (encodedPath && geometryLibrary) {
+      // Fallback: decode the encoded polyline string
+      const decoded = geometryLibrary.encoding.decodePath(encodedPath);
+      polyline.setPath(decoded);
+    }
+    // If neither prop is provided, do nothing (leave previous path or empty).
+  }, [polyline, pathCoordinates, encodedPath, geometryLibrary]);
 
-  // add polyline to map
-  useEffect(() => {
+  // 4) Add the polyline to the map (and clean up on unmount)
+  React.useEffect(() => {
     if (!map || !polyline) return;
-
-    console.log('adding polyline to map');
     polyline.setMap(map);
-
-    return () => polyline.setMap(null);
+    return () => {
+      polyline.setMap(null);
+    };
   }, [map, polyline]);
 
-  return <></>;
+  return null;
 };

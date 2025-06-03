@@ -30,7 +30,6 @@ export default function Home() {
     }
   }, []);
 
-  console.log(publicEvents);
   return (
     <>
       <p className="text-3xl font-bold p-4">Upcoming Events</p>

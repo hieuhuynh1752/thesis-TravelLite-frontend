@@ -44,14 +44,10 @@ const EventsListPanelItems = ({
   } = useUserContext();
   const { resetAllTravelLogs } = useTravelContext();
 
-  console.log(eventsList);
-
   const handleEvents = React.useCallback(
     (showAll?: boolean) => {
-      console.log(allEvents);
       if ((!adminMode && !eventsAsParticipantList) || (adminMode && !allEvents))
         return;
-      console.log(showAll);
       // pull out accepted events
       const rawEvents = adminMode
         ? allEvents
