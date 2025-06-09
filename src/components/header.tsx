@@ -12,12 +12,12 @@ import logo_travellite from '@/img/logo_travellite.png';
 import { ChevronRight } from 'lucide-react';
 import Cookie from 'js-cookie';
 import { UserRole } from '../../services/api/type.api';
-import { Button } from '@/components/ui/button';
 import { useRouter, usePathname } from 'next/navigation';
 import CreateOrUpdateEventDialog from '@/components/userPage/create-event-dialog.view';
 import { GoogleMapsContext } from '@/contexts/google-maps-context';
 import { TravelProvider } from '@/contexts/travel-context';
 import { APIProvider } from '@vis.gl/react-google-maps';
+import { motion } from 'framer-motion';
 
 export default function HeaderWrapper({
   children,
@@ -33,7 +33,7 @@ export default function HeaderWrapper({
     typeof google.maps | undefined
   >(undefined);
   const currentPageInfo = React.useMemo(() => {
-    const breadcrumbs = pathName.split('/');
+    const breadcrumbs = pathName!.split('/');
     if (breadcrumbs[1] === 'dashboard') {
       if (!!breadcrumbs[3]) {
         if (breadcrumbs[3] === 'events') {
@@ -111,25 +111,34 @@ export default function HeaderWrapper({
                   )}
                 </>
               ) : (
-                <>
-                  <div className="flex flex-1 items-center gap-2 px-3">
+                <motion.header
+                  initial={{ y: -48, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1, transition: { duration: 0.6 } }}
+                  className="sticky top-0 z-20 bg-white/70 backdrop-blur w-full"
+                >
+                  <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8 pt-8">
+                    <div className="flex items-center gap-2 px-3">
+                      <a
+                        className="hover:cursor-pointer"
+                        onClick={() => router.push('/')}
+                      >
+                        <Image
+                          src={logo_travellite}
+                          alt="Image"
+                          className=" h-fit w-28 md:p-10 dark:brightness-[0.2] dark:grayscale"
+                          width={192}
+                          style={{ padding: 0 }}
+                        />
+                      </a>
+                    </div>
                     <a
-                      className="hover:cursor-pointer"
-                      onClick={() => router.push('/')}
+                      className="hover:cursor-pointer rounded-md border border-emerald-600 px-4 py-2 text-emerald-600 transition hover:bg-emerald-50"
+                      onClick={() => router.push('/login')}
                     >
-                      <Image
-                        src={logo_travellite}
-                        alt="Image"
-                        className=" h-fit w-28 md:p-10 dark:brightness-[0.2] dark:grayscale"
-                        width={192}
-                        style={{ padding: 0 }}
-                      />
+                      Sign in
                     </a>
-                  </div>
-                  <div className="pr-4">
-                    <Button onClick={() => router.push('/login')}>Login</Button>
-                  </div>
-                </>
+                  </nav>
+                </motion.header>
               )}
             </div>
           </header>

@@ -79,25 +79,25 @@ export default function EventDetailsPage() {
   }, []);
 
   return (
-    <>
+    <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 text-center md:text-left md:grid-cols-2">
       <div>
-        <div className="p-4 items-center border-b-2 border-muted/50 border-dashed">
-          <div className="flex gap-2 items-center pb-4">
-            <Button
-              variant={'ghost'}
-              className={'border border-primary'}
-              onClick={() => {
-                if (!!userId) {
-                  router.push('/explore');
-                } else {
-                  router.push('/');
-                }
-              }}
-            >
-              <ArrowLeft /> Back to explore
-            </Button>
-          </div>
-          <div className="flex flex-wrap justify-between w-full">
+        <div className="flex gap-2 items-center pb-4">
+          <Button
+            variant={'ghost'}
+            className={'border border-primary'}
+            onClick={() => {
+              if (!!userId) {
+                router.push('/explore');
+              } else {
+                router.push('/');
+              }
+            }}
+          >
+            <ArrowLeft /> Back to explore
+          </Button>
+        </div>
+        <div className="p-4 items-center border-2 border-muted border-dashed rounded-t-2xl">
+          <div className="flex flex-wrap gap-4 justify-between w-full">
             <div className="flex gap-4 items-center">
               <div className="flex flex-col text-primary border-2 border-muted rounded-xl h-fit">
                 <p className="text-2xl font-extrabold self-center text-center w-full">
@@ -148,7 +148,7 @@ export default function EventDetailsPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 p-4">
+        <div className="flex flex-wrap gap-2 p-4 border-2 border-dashed border-t-0 border-muted rounded-b-2xl">
           <div
             className={
               'w-full md:flex-1 md:min-w-[calc(50%-0.5rem)] flex flex-col gap-2'
@@ -180,46 +180,46 @@ export default function EventDetailsPage() {
               <p>{event?.description}</p>
             </div>
           </div>
-          <div
-            className={
-              'w-full md:flex-1 md:min-w-[calc(50%-0.5rem)] h-80vh bg-gray-300'
-            }
-          >
-            <APIProvider
-              apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}
-              libraries={['marker']}
-            >
-              <GoogleMapsContext.Provider value={googleMaps}>
-                {googleMaps && event ? (
-                  <div className="h-fit">
-                    <div style={{ width: '100%', height: '40vw' }}>
-                      <Map
-                        defaultCenter={{
-                          lat: event.location?.latitude ?? 52.377956,
-                          lng: event.location.longtitude ?? 4.89707,
-                        }}
-                        defaultZoom={12}
-                        gestureHandling={'greedy'}
-                        mapId={'bf51a910020fa25a'}
-                      >
-                        {event.location && (
-                          <MarkerWithInfoWindow
-                            position={{
-                              lat: event.location.latitude,
-                              lng: event.location.longtitude,
-                            }}
-                            description={event.location.name}
-                          />
-                        )}
-                      </Map>
-                    </div>
-                  </div>
-                ) : null}
-              </GoogleMapsContext.Provider>
-            </APIProvider>
-          </div>
         </div>
       </div>
-    </>
+      <div
+        className={
+          'w-full md:flex-1 md:min-w-[calc(50%-0.5rem)] h-80vh bg-gray-300'
+        }
+      >
+        <APIProvider
+          apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}
+          libraries={['marker']}
+        >
+          <GoogleMapsContext.Provider value={googleMaps}>
+            {googleMaps && event ? (
+              <div className="h-fit">
+                <div style={{ width: '100%', height: '40vw' }}>
+                  <Map
+                    defaultCenter={{
+                      lat: event.location?.latitude ?? 52.377956,
+                      lng: event.location.longtitude ?? 4.89707,
+                    }}
+                    defaultZoom={12}
+                    gestureHandling={'greedy'}
+                    mapId={'bf51a910020fa25a'}
+                  >
+                    {event.location && (
+                      <MarkerWithInfoWindow
+                        position={{
+                          lat: event.location.latitude,
+                          lng: event.location.longtitude,
+                        }}
+                        description={event.location.name}
+                      />
+                    )}
+                  </Map>
+                </div>
+              </div>
+            ) : null}
+          </GoogleMapsContext.Provider>
+        </APIProvider>
+      </div>
+    </div>
   );
 }

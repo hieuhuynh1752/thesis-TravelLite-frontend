@@ -79,7 +79,7 @@ export default function UserDashboard() {
   }, [handleGetUserData]);
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4">
+    <div className="flex flex-1 flex-col gap-4 p-4 m-auto">
       <div className={`border-primary border-2 p-2 rounded`}>
         <p>
           Hello{' '}
