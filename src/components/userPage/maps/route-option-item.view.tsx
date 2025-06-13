@@ -176,9 +176,11 @@ const RouteOptionItems: React.FC = () => {
           origin: leg.start_address,
           destination: leg.end_address,
           travelMode: rawResult?.request.travelMode,
-          plannedAt:
+          departAt:
             rawResult?.routes[index].legs[0].departure_time?.value ??
             new Date(),
+          arrivalBy:
+            rawResult?.routes[index].legs[0].arrival_time?.value ?? new Date(),
           routeDetails: {
             ...rawResult,
             routes: [{ ...rawResult?.routes[index] }],

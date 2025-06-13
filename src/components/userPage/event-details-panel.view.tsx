@@ -4,10 +4,8 @@ import { useUserContext } from '@/contexts/user-context';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import {
-  ChevronsDown,
   ChevronsLeft,
   ChevronsRight,
-  ChevronsUp,
   Clock,
   Leaf,
   MapPin,
@@ -48,7 +46,6 @@ function EventDetailsPanel({
 }: EventDetailsPanelProps) {
   const { user, selectedEvent } = useUserContext();
   const router = useRouter();
-  const [eventDetailExpanded, setEventDetailExpanded] = React.useState(true);
   const [participantTravelDetails, setParticipantTravelDetails] =
     React.useState<SavedTravelPlanType[] | undefined>();
 
@@ -62,10 +59,6 @@ function EventDetailsPanel({
       setParticipantTravelDetails(data);
     }
   }, [selectedEvent?.participants, user?.id]);
-
-  const handleToggleEventDetail = React.useCallback(() => {
-    setEventDetailExpanded((prevState) => !prevState);
-  }, []);
 
   const getOverviewContent = React.useCallback(() => {
     if (!participantTravelDetails) {
@@ -87,9 +80,9 @@ function EventDetailsPanel({
   }, [getParticipantTravelDetails]);
 
   return (
-    <div className="w-full bg-white flex flex-col px-4 gap-2 pt-2">
+    <div className="w-full bg-white flex flex-col px-4 pt-2">
       <div
-        className={`${eventDetailExpanded || extended ? 'h-full' : 'h-32'} relative flex flex-col gap-2 transition-all duration-500 ease-in-out overflow-hidden`}
+        className={`h-full relative flex flex-col gap-2 pb-2 transition-all duration-500 ease-in-out overflow-y-auto`}
       >
         <div className={'flex justify-between items-center'}>
           <div className="font-bold text-2xl">{selectedEvent?.title}</div>
@@ -156,9 +149,7 @@ function EventDetailsPanel({
           </div>
           {selectedEvent ? selectedEvent.location.address : ''}
         </div>
-        <div
-          className={`text-gray-700 ${eventDetailExpanded || extended ? '' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
-        >
+        <div className={`text-gray-700`}>
           <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
             <UserCog size={16} className="self-center" /> Host:{' '}
           </div>
@@ -168,9 +159,7 @@ function EventDetailsPanel({
               : selectedEvent.creator.name
             : 'undefined'}
         </div>
-        <div
-          className={`text-gray-700 ${eventDetailExpanded || extended ? 'flex flex-col' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
-        >
+        <div className={`text-gray-700 flex flex-col`}>
           <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 w-fit rounded-r-md">
             <Users size={16} className="self-center" /> Participants:{' '}
           </div>
@@ -192,34 +181,12 @@ function EventDetailsPanel({
               </div>
             )}
         </div>
-        <div
-          className={`text-gray-700 ${eventDetailExpanded ? '' : 'h-6 text-ellipsis overflow-hidden whitespace-nowrap'}`}
-        >
+        <div className={`text-gray-700`}>
           <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
             <ScanText size={16} className="self-center" /> Description:
           </div>
           {selectedEvent?.description}
         </div>
-        {!extended && (
-          <div className="flex py-2 w-full flex-wrap items-center gap-2 absolute bottom-0 backdrop-blur-xl">
-            <Separator orientation="horizontal" className="flex flex-1" />
-            <Button
-              variant={'ghost'}
-              className="h-6 border-gray-400 border bg-white p-0 px-2"
-              onClick={() => handleToggleEventDetail()}
-            >
-              {eventDetailExpanded ? (
-                <ChevronsUp size={8} />
-              ) : (
-                <ChevronsDown size={8} />
-              )}
-              {eventDetailExpanded
-                ? 'Expand location info'
-                : 'Reduce location info'}
-            </Button>
-            <Separator orientation="horizontal" className="flex flex-1" />
-          </div>
-        )}
       </div>
       {extended && (
         <div className={`pt-4`}>
@@ -412,7 +379,6 @@ function EventDetailsPanel({
                     )}
                   />
                 </div>
-                <Separator orientation={'vertical'} className={`my-4`} />
                 <div className={`flex flex-col gap-4 w-1/2`}>
                   <div>
                     <p
@@ -450,7 +416,7 @@ function EventDetailsPanel({
       )}
       {!extended && (
         <div
-          className={`min-h-10 flex flex-col gap-4 transition-all duration-600 ease-in-out overflow-hidden`}
+          className={`min-h-fit flex flex-col gap-4 border-t-2 border-gray-200 transition-all duration-600 ease-in-out overflow-hidden`}
         >
           <div className={`flex justify-between items-center py-1`}>
             <div className="inline-flex items-baseline gap-1 pr-2 text-gray-500 text-2xl">
@@ -472,9 +438,6 @@ function EventDetailsPanel({
                 : 'Show Travel Planning'}
             </Button>
           </div>
-          <div
-            className={`w-48 ${eventDetailExpanded ? 'h-0' : 'h-48'} bg-muted`}
-          ></div>
         </div>
       )}
     </div>

@@ -77,9 +77,16 @@ export default function TravelPlanOverviewCard({
           <div>
             <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
               <Clock size={16} className="self-center" />
-              {'Date & Time: '}
+              {'Departure at: '}
             </div>
-            {format(new Date(plan.plannedAt), 'MMMM do yyyy, hh:mm a')}
+            {format(new Date(plan.departAt), 'MMMM do yyyy, hh:mm a')}
+          </div>
+          <div>
+            <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
+              <Clock size={16} className="self-center" />
+              {'Arrival by: '}
+            </div>
+            {format(new Date(plan.arrivalBy), 'MMMM do yyyy, hh:mm a')}
           </div>
           <div>
             <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
@@ -140,11 +147,20 @@ export default function TravelPlanOverviewCard({
         <div>
           <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
             <Clock size={16} className="self-center" />
-            {'Date & Time: '}
+            {'Departure At: '}
           </div>
           {selectedEvent?.occurrence === EventOccurrence.DAILY
-            ? 'Daily at ' + format(new Date(plan.plannedAt), 'hh:mm a')
-            : format(new Date(plan.plannedAt), 'MMMM do yyyy, hh:mm a')}
+            ? 'Daily at ' + format(new Date(plan.departAt), 'hh:mm a')
+            : format(new Date(plan.departAt), 'MMMM do yyyy, hh:mm a')}
+        </div>
+        <div>
+          <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
+            <Clock size={16} className="self-center" />
+            {'Arrival by: '}
+          </div>
+          {selectedEvent?.occurrence === EventOccurrence.DAILY
+            ? 'Daily at ' + format(new Date(plan.arrivalBy), 'hh:mm a')
+            : format(new Date(plan.arrivalBy), 'MMMM do yyyy, hh:mm a')}
         </div>
         <div>
           <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">

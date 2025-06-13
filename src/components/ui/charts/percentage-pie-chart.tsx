@@ -2,8 +2,7 @@
 import { Cell, Legend, Pie, PieChart, Tooltip } from 'recharts';
 import * as React from 'react';
 import { ChartContainer } from '@/components/ui/charts/chart';
-import { greens } from '@/components/ui/charts/horizontal-bar-chart';
-
+import iwanthue from 'iwanthue';
 export type PercentagePieChartProps<T> = {
   data: T[];
 };
@@ -11,6 +10,13 @@ export type PercentagePieChartProps<T> = {
 export function PercentagePieChart<T extends Record<string, any>>({
   data,
 }: PercentagePieChartProps<T>) {
+  const palette = React.useMemo(() => {
+    console.log(data);
+    if (data.length) {
+      return iwanthue(data.length);
+    }
+  }, [data]);
+
   return (
     <ChartContainer config={{}} className={'min-h-[250px] w-full px-4'}>
       <PieChart>
@@ -25,15 +31,17 @@ export function PercentagePieChart<T extends Record<string, any>>({
           label
           width={'20%'}
         >
-          {greens[4]?.map((_, index) => (
-            <Cell
-              key={`cell-${index}`}
-              fill={greens[4][index % greens[4].length]}
-            />
+          {data?.map((_, index) => (
+            <Cell key={`cell-${index}`} fill={palette?.[index]} />
           ))}
         </Pie>
         <Tooltip />
-        <Legend align={'right'} layout={'vertical'} verticalAlign={'middle'} />
+        <Legend
+          align={'right'}
+          layout={'vertical'}
+          verticalAlign={'middle'}
+          wrapperStyle={{ height: '80%', overflow: 'auto', top: 10 }}
+        />
       </PieChart>
     </ChartContainer>
   );

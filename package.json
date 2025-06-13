@@ -30,6 +30,7 @@
     "cmdk": "^1.0.4",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.16.0",
+    "iwanthue": "^2.0.0",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.475.0",
     "nanoid": "^5.1.0",

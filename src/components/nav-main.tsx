@@ -42,7 +42,7 @@ export function NavMain({
                 onClick={() => handleSidebarMenuItemClick(item.url)}
                 isActive={
                   pathname === item.url ||
-                  (pathname.split('/')[1] === 'explore' &&
+                  (pathname?.split('/')[1] === 'explore' &&
                     item.url === '/explore')
                 }
               >

@@ -63,7 +63,7 @@ const RoutesPanel = (props: RoutePanelProps) => {
     setDestinationValue,
     resetAllTravelLogs,
   } = useTravelContext();
-  const [timingOptions, setTimingOptions] = React.useState<string>('leaveNow');
+  const [timingOptions, setTimingOptions] = React.useState<string>('departAt');
   const [date, setDate] = React.useState<Date>();
   const [timeValue, setTimeValue] = React.useState<string>(() => {
     const now = new Date();
@@ -82,16 +82,7 @@ const RoutesPanel = (props: RoutePanelProps) => {
 
   const handleTimingOptionsChange = React.useCallback(
     (value: string) => {
-      if (value === 'leaveNow') {
-        setTimingOptions('leaveNow');
-        setSearchDirection((prevState) => {
-          return {
-            ...prevState,
-            arrivalTime: undefined,
-            departureTime: undefined,
-          } as DirectionType;
-        });
-      } else if (value === 'departAt') {
+      if (value === 'departAt') {
         setTimingOptions('departAt');
         setDate(new Date());
         setTimeValue(() => {
@@ -219,7 +210,8 @@ const RoutesPanel = (props: RoutePanelProps) => {
             selectedFlight.destination.name +
             `(${selectedFlight.destination.airport?.iataCode})`,
           travelMode: 'FLYING',
-          plannedAt: selectedFlight.departureTime,
+          departAt: selectedFlight.departureTime,
+          arrivalBy: selectedFlight.arrivalTime,
           routeDetails: selectedFlight,
           travelSteps: [],
           totalCo2: selectedFlight.details.carbon_emissions.this_flight / 1000,
@@ -379,43 +371,39 @@ const RoutesPanel = (props: RoutePanelProps) => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={'leaveNow'}>Leave now</SelectItem>
                 <SelectItem value={'departAt'}>Depart at</SelectItem>
                 <SelectItem value={'arriveBy'}>Arrive by</SelectItem>
               </SelectContent>
             </Select>
-            {timingOptions !== 'leaveNow' && (
-              <>
-                <TimePicker
-                  id={'time'}
-                  value={timeValue}
-                  onTimeChange={handleTimeChange}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={'outline'}
+                  className={cn(
+                    'w-full justify-start text-left font-normal',
+                    !date && 'text-muted-foreground',
+                  )}
+                  size={'sm'}
+                >
+                  <CalendarIcon size={14} />{' '}
+                  {date ? format(date, 'PPP') : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={handleDaySelect}
+                  disabled={{ before: new Date() }}
                 />
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={'outline'}
-                      className={cn(
-                        'w-full justify-start text-left font-normal',
-                        !date && 'text-muted-foreground',
-                      )}
-                      size={'sm'}
-                    >
-                      <CalendarIcon size={14} />{' '}
-                      {date ? format(date, 'PPP') : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={handleDaySelect}
-                      disabled={{ before: new Date() }}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </>
-            )}
+              </PopoverContent>
+            </Popover>
+            <TimePicker
+              id={'time'}
+              value={timeValue}
+              onTimeChange={handleTimeChange}
+              disabled={!date}
+            />
           </div>
         </div>
         <Separator orientation={'horizontal'} />

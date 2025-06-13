@@ -47,7 +47,8 @@ export interface FlattenedSelectedRoute {
   origin: string;
   destination: string;
   travelMode: google.maps.TravelMode;
-  plannedAt: Date;
+  departAt: Date;
+  arrivalBy: Date;
   routeDetails: google.maps.DirectionsResult;
   travelSteps: FlattenedTravelStep[];
   totalCo2?: number;
@@ -58,7 +59,8 @@ export interface FlattenedSelectedFlight {
   origin: string;
   destination: string;
   travelMode: string;
-  plannedAt: Date;
+  departAt: Date;
+  arrivalBy: Date;
   routeDetails: SelectedFlight;
   travelSteps: [];
   totalCo2?: number;

@@ -166,7 +166,7 @@ const RouteOptionList: React.FC = () => {
                 setSelectedFlightMode?.(true);
                 setSelectedTravelMode(undefined);
               }}
-              disabled={setSelectedFlightMode === undefined}
+              disabled={selectedFlightMode === undefined}
             >
               <PlaneTakeoff />
             </button>

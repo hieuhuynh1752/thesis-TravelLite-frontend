@@ -27,7 +27,7 @@ export function LoginForm({
         document.cookie = `token=${response.data.access_token}; path=/;`;
         document.cookie = `role=${response.data.user.role}; path=/`;
         setUser?.(response.data.user);
-        if (searchParams.get('eventRegister')) {
+        if (searchParams?.get('eventRegister')) {
           router.push('/explore/events/' + searchParams.get('eventRegister'));
         } else {
           router.push('/dashboard');
@@ -95,9 +95,9 @@ export function LoginForm({
           className="w-full"
           type="button"
           onClick={() => {
-            if (searchParams.get('eventRegister')) {
+            if (searchParams?.get('eventRegister')) {
               router.push(
-                '/register?eventRegister=' + searchParams.get('eventRegister'),
+                '/register?eventRegister=' + searchParams?.get('eventRegister'),
               );
             } else {
               router.push('/register');

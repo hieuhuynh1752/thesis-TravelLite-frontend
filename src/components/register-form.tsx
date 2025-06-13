@@ -29,7 +29,7 @@ export function RegisterForm({
     try {
       await register(formData.email, formData.password);
       toast('Registration successful! Please login to continue!');
-      if (searchParams.get('eventRegister')) {
+      if (searchParams?.get('eventRegister')) {
         router.push(
           '/login?eventRegister=' + searchParams.get('eventRegister'),
         );
@@ -135,7 +135,7 @@ export function RegisterForm({
           className="w-full"
           type="button"
           onClick={() => {
-            if (searchParams.get('eventRegister')) {
+            if (searchParams?.get('eventRegister')) {
               router.push(
                 '/login?eventRegister=' + searchParams.get('eventRegister'),
               );
