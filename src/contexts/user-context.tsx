@@ -10,12 +10,17 @@ import { Dispatch } from 'react';
 
 type UserContextType = {
   user?: UserType;
-  events?: EventParticipantType[];
+  eventsAsParticipantList?: EventParticipantType[];
+  allEvents?: EventType[];
   selectedEvent?: EventType;
-  setUser?: (userInfo: UserType) => void;
-  setEvents?: (events: EventParticipantType[]) => void;
-  setSelectedEvent?: (event?: EventType) => void;
   isEditingEvent?: boolean;
+
+  setUser?: Dispatch<React.SetStateAction<UserType | undefined>>;
+  setAllEvents?: Dispatch<React.SetStateAction<EventType[] | undefined>>;
+  setEventsAsParticipantList?: Dispatch<
+    React.SetStateAction<EventParticipantType[] | undefined>
+  >;
+  setSelectedEvent?: Dispatch<React.SetStateAction<EventType | undefined>>;
   setIsEditingEvent?: Dispatch<React.SetStateAction<boolean>>;
 };
 
@@ -25,9 +30,10 @@ export const UserContextProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = React.useState<UserType | undefined>();
-  const [events, setEvents] = React.useState<
+  const [eventsAsParticipantList, setEventsAsParticipantList] = React.useState<
     EventParticipantType[] | undefined
   >();
+  const [allEvents, setAllEvents] = React.useState<EventType[] | undefined>();
   const [selectedEvent, setSelectedEvent] = React.useState<
     EventType | undefined
   >();
@@ -38,12 +44,14 @@ export const UserContextProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         user,
         setUser,
-        events,
-        setEvents,
+        eventsAsParticipantList,
+        setEventsAsParticipantList,
         selectedEvent,
         setSelectedEvent,
         isEditingEvent,
         setIsEditingEvent,
+        allEvents,
+        setAllEvents,
       }}
     >
       {children}

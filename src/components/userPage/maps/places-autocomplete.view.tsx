@@ -12,11 +12,15 @@ import {
 import { CommandLoading } from 'cmdk';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
+import { AirportDetails } from '../../../../services/api/type.api';
 
 type GoogleMapsAutocompleteProps = {
   inputValue: string;
   onInputValueChange: (value: string) => void;
-  onSelect: (place: google.maps.places.PlaceResult | null) => void;
+  onSelect: (
+    place: google.maps.places.PlaceResult | null,
+    airportDetails?: AirportDetails,
+  ) => void;
   className?: string;
 };
 
@@ -56,6 +60,7 @@ const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = (
       setFetchingData(true);
       const request = { input: inputValue, sessionToken };
       const response = await autocompleteService.getPlacePredictions(request);
+      console.log(response.predictions);
       setSuggestions(response.predictions);
       setFetchingData(false);
     },
@@ -72,21 +77,35 @@ const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = (
   );
 
   const handleSuggestionClick = React.useCallback(
-    (placeId: string) => {
+    (placeId: string, suggestion: string) => {
       if (!places || !sessionToken) return;
+      console.log(suggestion);
       const detailRequestOptions = {
         placeId,
-        fields: ['place_id', 'geometry', 'name', 'formatted_address'],
+        fields: ['place_id', 'geometry', 'name', 'formatted_address', 'types'],
         sessionToken,
       };
 
       const detailsRequestCallback = (
         placeDetails: google.maps.places.PlaceResult | null,
       ) => {
-        props.onSelect?.(placeDetails);
+        if (placeDetails?.types?.find((type) => type === 'airport')) {
+          const matched_iata_code =
+            suggestion.match(/\(([A-Z]{3})\)/)?.[1] ?? '';
+          props.onSelect?.(placeDetails, {
+            iataCode: matched_iata_code,
+            lat: placeDetails?.geometry?.location?.lat() ?? 0,
+            lng: placeDetails?.geometry?.location?.lng() ?? 0,
+          });
+        } else {
+          props.onSelect?.(placeDetails);
+        }
         setSuggestions(null);
-        props.onInputValueChange?.(placeDetails?.formatted_address ?? '');
+        props.onInputValueChange?.(placeDetails?.name ?? '');
         setSessionToken(new places.AutocompleteSessionToken());
+        if (placeDetails?.name && placeDetails.name !== '') {
+          setValue(placeDetails.name);
+        }
 
         setFetchingData(false);
       };
@@ -101,7 +120,9 @@ const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = (
       <CommandItem
         key={suggestion.place_id}
         value={suggestion.place_id}
-        onSelect={(value) => handleSuggestionClick(value)}
+        onSelect={(value) =>
+          handleSuggestionClick(value, suggestion.description)
+        }
       >
         {suggestion.description}
       </CommandItem>
@@ -111,7 +132,7 @@ const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = (
   return (
     <div
       className={
-        'w-full max-w-md border-2 focus-within:border-gray-700 rounded-lg ' +
+        'w-full border-2 focus-within:border-gray-700 rounded-lg ' +
         props.className
       }
     >
@@ -136,7 +157,7 @@ const GoogleMapsAutocomplete: React.FC<GoogleMapsAutocompleteProps> = (
             </Button>
           )}
         </CommandInput>
-        <CommandList className="z-10 bg-muted">
+        <CommandList className="z-10 bg-gray-50">
           {fetchingData && <CommandLoading />}
           {suggestions !== null && (
             <>

@@ -8,8 +8,13 @@ import { getMe } from '../../../services/api/auth.api';
 import { getUserById } from '../../../services/api/user.api';
 import EventsListPanelItems from '@/components/userPage/events-list-panel-items.view';
 
-const EventsListPanel = () => {
-  const { setUser, setEvents } = useUserContext();
+interface EventsListPanelProps {
+  extended?: boolean;
+  adminMode?: boolean;
+}
+
+const EventsListPanel = ({ extended, adminMode }: EventsListPanelProps) => {
+  const { setUser, setEventsAsParticipantList } = useUserContext();
   const [userId, setUserId] = React.useState<number | undefined>();
 
   const handleGetUserData = React.useCallback(() => {
@@ -21,24 +26,28 @@ const EventsListPanel = () => {
           email: value.email,
           role: value.role,
         });
-        setEvents?.(value.eventsParticipated);
+        setEventsAsParticipantList?.(value.eventsParticipated);
       });
     }
-  }, [userId, setUser, setEvents]);
+  }, [userId, setUser, setEventsAsParticipantList]);
 
   React.useEffect(() => {
-    const role = Cookie.get('role');
-    if (role !== UserRole.USER) {
-      redirect('/dashboard');
-    } else {
-      getMe().then((userId) => setUserId(userId));
-      handleGetUserData();
+    if (!adminMode) {
+      const role = Cookie.get('role');
+      if (role !== UserRole.USER) {
+        redirect('/dashboard');
+      } else {
+        getMe().then((userId) => setUserId(userId));
+        handleGetUserData();
+      }
     }
-  }, [handleGetUserData]);
+  }, [handleGetUserData, adminMode]);
 
   return (
-    <div className="flex flex-col w-3/4 gap-4">
-      <EventsListPanelItems />
+    <div
+      className={`flex flex-col gap-4 ${extended ? 'w-1/4 h-full' : 'w-1/2'}`}
+    >
+      <EventsListPanelItems extended={extended} adminMode={adminMode} />
     </div>
   );
 };

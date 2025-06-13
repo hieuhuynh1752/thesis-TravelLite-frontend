@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import * as React from 'react';
-import { register, login } from '../../services/api/auth.api';
-import { useRouter } from 'next/navigation';
+import { login } from '../../services/api/auth.api';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useUserContext } from '@/contexts/user-context';
 import { toast } from 'sonner';
 
@@ -17,16 +17,8 @@ export function LoginForm({
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { setUser } = useUserContext();
-
-  const handleRegister = React.useCallback(async () => {
-    try {
-      await register(email, password);
-      toast('Registration successful!');
-    } catch (err) {
-      toast('Registration failed: ' + err);
-    }
-  }, [email, password]);
 
   const handleLogin = React.useCallback(async () => {
     try {
@@ -35,13 +27,17 @@ export function LoginForm({
         document.cookie = `token=${response.data.access_token}; path=/;`;
         document.cookie = `role=${response.data.user.role}; path=/`;
         setUser?.(response.data.user);
-        router.push('/dashboard');
+        if (searchParams?.get('eventRegister')) {
+          router.push('/explore/events/' + searchParams.get('eventRegister'));
+        } else {
+          router.push('/dashboard');
+        }
         toast('Login successful! Welcome back!');
       }
     } catch (err) {
       toast('Login failed: ' + err);
     }
-  }, [email, password, router, setUser]);
+  }, [email, password, router, searchParams, setUser]);
 
   return (
     <form className={cn('flex flex-col gap-6', className)} {...props}>
@@ -81,7 +77,12 @@ export function LoginForm({
             onChange={(event) => setPassword(event.target.value)}
           />
         </div>
-        <Button type="button" className="w-full" onClick={handleLogin}>
+        <Button
+          type="button"
+          className="w-full"
+          onClick={handleLogin}
+          disabled={email === '' || password === ''}
+        >
           Login
         </Button>
         <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
@@ -93,7 +94,15 @@ export function LoginForm({
           variant="outline"
           className="w-full"
           type="button"
-          onClick={handleRegister}
+          onClick={() => {
+            if (searchParams?.get('eventRegister')) {
+              router.push(
+                '/register?eventRegister=' + searchParams?.get('eventRegister'),
+              );
+            } else {
+              router.push('/register');
+            }
+          }}
         >
           Register
         </Button>

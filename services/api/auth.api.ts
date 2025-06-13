@@ -29,9 +29,14 @@ export const login = async (email: string, password: string) => {
   };
 };
 
-export const getMe = async (): Promise<number> => {
-  const response = await api.get('/auth/me');
-  return Number.parseInt(response.data.userId);
+export const getMe = async (): Promise<number | undefined> => {
+  try {
+    const response = await api.get('/auth/me');
+    return Number.parseInt(response.data.userId);
+  } catch (error) {
+    console.log(error);
+    return undefined;
+  }
 };
 
 export const logout = async () => {

@@ -4,7 +4,7 @@ import {
   FlattenedTravelStep,
   useTravelContext,
 } from '@/contexts/travel-context';
-import { generateRandomId } from '@/utils/utils';
+import { generateRandomId, minutesToHoursAndMinutes } from '@/utils/utils';
 import { fetchEmissions } from '../../../../services/api/emission.api';
 import {
   isTransitRoutes,
@@ -16,19 +16,26 @@ import {
   BusFront,
   Footprints,
   Leaf,
+  MessageCircleWarning,
   TrainFront,
   TramFront,
 } from 'lucide-react';
 import { useGoogleMaps } from '@/contexts/google-maps-context';
+import Image from 'next/image';
+import { parse } from 'date-fns/parse';
+import { format } from 'date-fns';
 
-const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
-  travelMode,
-}) => {
+const RouteOptionItems: React.FC = () => {
   const {
     responses,
+    flightsResponses,
     selectedRoute,
     setSelectedRoute,
     setFlattenedSelectedRoute,
+    selectedTravelMode,
+    selectedFlightMode,
+    setSelectedFlight,
+    searchDirection,
   } = useTravelContext();
   const { TravelMode } = useGoogleMaps();
 
@@ -39,15 +46,15 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
 
   const rawResult = React.useMemo(() => {
     return responses.find(
-      (response) => response.request.travelMode === travelMode,
+      (response) => response.request.travelMode === selectedTravelMode,
     );
-  }, [responses, travelMode]);
+  }, [responses, selectedTravelMode]);
 
   const rawRoutes = React.useMemo(() => {
     return responses.find(
-      (response) => response.request.travelMode === travelMode,
+      (response) => response.request.travelMode === selectedTravelMode,
     )?.routes;
-  }, [responses, travelMode]);
+  }, [responses, selectedTravelMode]);
 
   const parsedTransitRoutes = React.useMemo(() => {
     if (!rawRoutes) {
@@ -107,6 +114,34 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
     }) as Step[];
   }, [rawResult]);
 
+  const toggleFlightDetails = React.useCallback(
+    (index: number) => {
+      if (
+        flightsResponses &&
+        searchDirection &&
+        searchDirection.origin &&
+        searchDirection.destination
+      ) {
+        setSelectedFlight?.({
+          origin: searchDirection.origin,
+          destination: searchDirection.destination,
+          departureTime: parse(
+            flightsResponses[index].flights[0].departure_airport.time,
+            'yyyy-MM-dd HH:mm',
+            new Date(),
+          ),
+          arrivalTime: parse(
+            flightsResponses[index].flights[0].arrival_airport.time,
+            'yyyy-MM-dd HH:mm',
+            new Date(),
+          ),
+          details: flightsResponses[index],
+        });
+      }
+    },
+    [flightsResponses, searchDirection, setSelectedFlight],
+  );
+
   const toggleRouteDetails = React.useCallback(
     (index: number, id: string) => {
       setSelectedRoute({ routes: rawResult, index, hashedId: id });
@@ -141,6 +176,11 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
           origin: leg.start_address,
           destination: leg.end_address,
           travelMode: rawResult?.request.travelMode,
+          departAt:
+            rawResult?.routes[index].legs[0].departure_time?.value ??
+            new Date(),
+          arrivalBy:
+            rawResult?.routes[index].legs[0].arrival_time?.value ?? new Date(),
           routeDetails: {
             ...rawResult,
             routes: [{ ...rawResult?.routes[index] }],
@@ -219,15 +259,7 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
     setRoutes(data);
   }, [setRoutes, parsedOtherRoutes, handleCalculateCO2]);
 
-  React.useEffect(() => {
-    if (travelMode === 'TRANSIT') {
-      handleGetTransitRoutesWithCO2();
-    } else {
-      handleGetRoutesWithCO2();
-    }
-  }, [travelMode, handleGetTransitRoutesWithCO2, handleGetRoutesWithCO2]);
-
-  const generateBreadcrumbs = (steps: Step[]) => {
+  const generateBreadcrumbs = React.useCallback((steps: Step[]) => {
     return steps.map((step, index) => {
       if (step.type === 'walking') {
         return (
@@ -279,23 +311,118 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
         );
       }
     });
-  };
+  }, []);
+
+  React.useEffect(() => {
+    if (selectedTravelMode !== undefined) {
+      if (selectedTravelMode === 'TRANSIT') {
+        handleGetTransitRoutesWithCO2();
+      } else {
+        handleGetRoutesWithCO2();
+      }
+    }
+  }, [
+    selectedTravelMode,
+    handleGetTransitRoutesWithCO2,
+    handleGetRoutesWithCO2,
+  ]);
 
   if (!TravelMode) {
     return null;
   }
+  console.log(selectedFlightMode, flightsResponses);
+  if (!selectedTravelMode && selectedFlightMode) {
+    return (
+      <div className="p-2 min-h-full h-fit">
+        {flightsResponses && (
+          <div
+            className={`mb-4 p-2 rounded border border-yellow-400 bg-amber-100 font-medium text-sm text-yellow-700 inline-flex gap-2 w-full`}
+          >
+            <MessageCircleWarning size={18} />
+            <span>Current flights API only look up for Direct flights!</span>
+          </div>
+        )}
+        {flightsResponses ? (
+          flightsResponses.map((flightOption, index) => {
+            const { hours, minutes } = minutesToHoursAndMinutes(
+              flightOption.flights[0].duration,
+            );
+            const departureTime = format(
+              parse(
+                flightOption.flights[0].departure_airport.time.split(' ')[1],
+                'HH:mm',
+                new Date(),
+              ),
+              'h:mm a',
+            );
+            const arrivalTime = format(
+              parse(
+                flightOption.flights[0].arrival_airport.time.split(' ')[1],
+                'HH:mm',
+                new Date(),
+              ),
+              'h:mm a',
+            );
+
+            return (
+              <div
+                key={index}
+                className={`mb-6 border border-gray-300 rounded-md bg-white p-4 border-l-8 flex justify-between items-center cursor-pointer`}
+                onClick={() => toggleFlightDetails(index)}
+              >
+                <div className={`flex gap-4`}>
+                  <Image
+                    src={flightOption.airline_logo}
+                    alt={'Airline logo'}
+                    width={48}
+                    height={48}
+                  />
+                  <div className={`flex flex-col`}>
+                    <div className={`font-semibold`}>
+                      {departureTime} - {arrivalTime}
+                    </div>
+                    <div className={`text-gray-500 font-medium`}>
+                      {flightOption.flights[0].airline}
+                    </div>
+                  </div>
+                </div>
+                <div className={`flex flex-col gap-1`}>
+                  <div className={`font-medium`}>
+                    {hours} {hours > 1 ? 'hrs' : 'hr'} {minutes} min
+                  </div>
+                  <div>
+                    <p className="text-right text-sm bg-green-100 px-2 rounded flex items-center">
+                      <Leaf className="text-green-500 pr-2" size={24} />
+                      {flightOption.carbon_emissions.this_flight / 1000} kg CO₂e
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div>
+            There is no flights available. Please try to search for other dates!
+          </div>
+        )}
+      </div>
+    );
+  }
   return (
-    <div className="p-2 bg-gray-100 min-h-full h-fit">
-      {travelMode === google.maps.TravelMode.TRANSIT && isTransitRoutes(routes)
+    <div className="p-2 min-h-full h-fit">
+      {selectedTravelMode === google.maps.TravelMode.TRANSIT &&
+      isTransitRoutes(routes)
         ? routes.map((route, index) => (
             <div
               key={generateRandomId()}
-              className={`mb-6 border border-gray-300 rounded-md bg-white p-2 border-l-8 ${selectedRoute.hashedId === travelMode! + index ? 'border-green-500' : ''}`}
+              className={`mb-6 border border-gray-300 rounded-md bg-white p-2 border-l-8 ${selectedRoute.hashedId === selectedTravelMode! + index ? 'border-primary' : ''}`}
             >
               {/* Basic Information */}
               <div
                 className="cursor-pointer"
-                onClick={() => toggleRouteDetails(index, travelMode + index)}
+                onClick={() =>
+                  toggleRouteDetails(index, selectedTravelMode + index)
+                }
               >
                 <div className="flex justify-between items-center">
                   <p className="font-semibold text-gray-800">
@@ -390,12 +517,14 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
             return (
               <div
                 key={generateRandomId()}
-                className={`mb-6 border border-gray-300 rounded-md bg-white p-2 border-l-8 ${selectedRoute.hashedId === travelMode! + index ? 'border-green-500' : ''}`}
+                className={`mb-6 border border-gray-300 rounded-md bg-white p-2 border-l-8 ${selectedRoute.hashedId === selectedTravelMode! + index ? 'border-green-500' : ''}`}
               >
                 {/* Basic Information */}
                 <div
                   className="cursor-pointer"
-                  onClick={() => toggleRouteDetails(index, travelMode! + index)}
+                  onClick={() =>
+                    toggleRouteDetails(index, selectedTravelMode! + index)
+                  }
                 >
                   <div className="flex justify-between items-center">
                     <p className="font-semibold text-gray-800 flex-1">
@@ -420,4 +549,4 @@ const RouteOptionItem: React.FC<{ travelMode?: google.maps.TravelMode }> = ({
   );
 };
 
-export default RouteOptionItem;
+export default RouteOptionItems;

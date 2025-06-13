@@ -8,7 +8,7 @@ export default async function DashboardRouter() {
   const role = cookieStore.get('role')?.value;
 
   if (!token) {
-    redirect('/login'); // Redirect if not authenticated
+    redirect('/'); // Redirect if not authenticated
   }
 
   // ✅ Redirect based on role
@@ -17,6 +17,6 @@ export default async function DashboardRouter() {
   } else if (role === UserRole.USER) {
     redirect('/dashboard/user');
   } else {
-    redirect('/login'); // Fallback for undefined roles
+    redirect('/'); // Fallback for undefined roles
   }
 }

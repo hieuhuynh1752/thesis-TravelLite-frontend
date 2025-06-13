@@ -1,11 +1,5 @@
 'use client';
-import { SidebarLeft } from '@/components/sidebar-left';
 import { Separator } from '@/components/ui/separator';
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
 
 import Cookie from 'js-cookie';
 import * as React from 'react';
@@ -16,18 +10,19 @@ import { GoogleMapsContext } from '@/contexts/google-maps-context';
 import { TravelProvider } from '@/contexts/travel-context';
 import MapContainer from '@/components/userPage/maps/map.view';
 import EventsListPanel from '@/components/userPage/events-list-panel.view';
-import EventDetailPanel from '@/components/userPage/event-details-panel.view';
-import RoutesPanel from '@/components/userPage/maps/routes-panel.view';
-import CreateOrUpdateEventDialog from '@/components/userPage/create-event-dialog.view';
+import EventDetailsPanel from '@/components/userPage/event-details-panel.view';
+import OverviewTravelHistoryReport from '@/components/userPage/overview-travel-history-report.view';
+import { useUserContext } from '@/contexts/user-context';
 
 export default function UserEvents() {
+  const { eventsAsParticipantList } = useUserContext();
   const [googleMaps, setGoogleMaps] = React.useState<
     typeof google.maps | undefined
   >(undefined);
-  const [showRoutePanel, setShowRoutePanel] = React.useState(true);
+  const [selectedTab, setSelectedTab] = React.useState<string>('all_events');
 
-  const toggleShowRoutePanel = React.useCallback(() => {
-    setShowRoutePanel((prevState) => !prevState);
+  const onSelectedTabChange = React.useCallback((tab: string) => {
+    setSelectedTab(tab);
   }, []);
 
   React.useEffect(() => {
@@ -51,68 +46,51 @@ export default function UserEvents() {
       libraries={['marker']}
     >
       <GoogleMapsContext.Provider value={googleMaps}>
-        <SidebarProvider>
-          <SidebarLeft />
-          <SidebarInset>
-            {googleMaps ? (
-              <TravelProvider>
-                <header className="sticky top-0 flex h-14 border-b-2 border-gray-200 shrink-0 items-center gap-2 bg-background">
-                  <div className="flex justify-between w-full">
-                    <div className="flex flex-1 items-center gap-2 px-3">
-                      <SidebarTrigger />
-                      <Separator orientation="vertical" className="mr-2 h-4" />
-                      <div className="p-2 bg-gray-100 rounded-md">
-                        <a>Events</a>
-                      </div>
-                    </div>
-                    <div className="pr-4">
-                      <CreateOrUpdateEventDialog />
-                    </div>
-                  </div>
-                </header>
-                <div className="flex flex-1 gap-2 pt-2">
-                  <div className={`flex flex-1 flex-col`}>
-                    <div className="h-fit">
-                      <MapContainer />
-                    </div>
-                    <div className="max-h-[50vh] flex">
-                      <EventsListPanel />
-                      <Separator orientation="vertical" />
-                      <EventDetailPanel
-                        isRoutesPanelVisible={showRoutePanel}
-                        toggleRoutesPanel={toggleShowRoutePanel}
-                      />
-                    </div>
-                  </div>
-                  <div
-                    className={`${showRoutePanel ? 'w-[27vw] border-l-2' : 'w-0 border-0'} h-[calc(100vh-4rem)] flex border-muted transition-all duration-300 ease-in-out`}
-                  >
-                    {showRoutePanel && <RoutesPanel />}
-                  </div>
-                </div>
-              </TravelProvider>
+        {googleMaps ? (
+          <TravelProvider>
+            <div className="flex p-4 pt-2 pb-0 border-b-2 border-muted gap-2">
+              <div
+                className={`py-1 px-4 rounded-t-sm font-semibold text-gray-500 bg-gray-50 hover:bg-muted/20 hover:text-primary cursor-pointer ${selectedTab === 'all_events' ? ' text-primary font-semibold bg-muted/50 hover:bg-muted/30' : ''}`}
+                onClick={() => onSelectedTabChange('all_events')}
+              >
+                All Events
+              </div>
+              <div
+                className={`py-1 px-4 rounded-t-sm  font-semibold text-gray-500 bg-gray-50 hover:bg-muted/20 hover:text-primary cursor-pointer ${selectedTab === 'reports' ? 'text-primary font-semibold bg-muted/50 hover:bg-muted/30' : ''}`}
+                onClick={() => onSelectedTabChange('reports')}
+              >
+                Reports
+              </div>
+            </div>
+            {selectedTab === 'reports' ? (
+              <OverviewTravelHistoryReport events={eventsAsParticipantList} />
             ) : (
-              <>
-                <header className="sticky top-0 flex h-14 border-b-2 border-gray-200 shrink-0 items-center gap-2 bg-background">
-                  <div className="flex justify-between w-full">
-                    <div className="flex flex-1 items-center gap-2 px-3">
-                      <SidebarTrigger />
-                      <Separator orientation="vertical" className="mr-2 h-4" />
-                      <div className="p-2 bg-gray-100 rounded-md">
-                        <a>Events</a>
-                      </div>
-                    </div>
+              <div className="flex flex-1 gap-2 pt-4">
+                <EventsListPanel extended />
+                <div
+                  className={`flex flex-1 flex-col overflow-y-auto`}
+                  style={{ maxHeight: 'calc(90vh - 0.5rem)' }}
+                >
+                  <div className="h-fit">
+                    <MapContainer />
                   </div>
-                </header>
-                <div className="flex flex-1 gap-2 pt-2">
-                  <div className="ml-4 h-full w-[30vw] max-w-3xl rounded-xl bg-muted/50" />
-                  <Separator orientation="vertical" />
-                  <div className="h-full w-full rounded-xl bg-muted/50" />
+                  <div className="flex">
+                    <Separator orientation="vertical" />
+                    <EventDetailsPanel extended />
+                  </div>
                 </div>
-              </>
+              </div>
             )}
-          </SidebarInset>
-        </SidebarProvider>
+          </TravelProvider>
+        ) : (
+          <>
+            <div className="flex flex-1 gap-2 pt-2">
+              <div className="ml-4 h-full w-[30vw] max-w-3xl rounded-xl bg-muted/50" />
+              <Separator orientation="vertical" />
+              <div className="h-full w-full rounded-xl bg-muted/50" />
+            </div>
+          </>
+        )}
       </GoogleMapsContext.Provider>
     </APIProvider>
   );

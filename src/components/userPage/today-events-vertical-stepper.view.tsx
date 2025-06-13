@@ -9,7 +9,7 @@ import { redirect } from 'next/navigation';
 
 const TodayEventsVerticalStepper = () => {
   const [todayEvents, setTodayEvents] = React.useState<EventType[]>([]);
-  const { events, setSelectedEvent } = useUserContext();
+  const { eventsAsParticipantList, setSelectedEvent } = useUserContext();
 
   const handleSetSelectedEvents = React.useCallback(
     (event: EventType) => {
@@ -20,8 +20,8 @@ const TodayEventsVerticalStepper = () => {
   );
 
   React.useEffect(() => {
-    if (events) {
-      let filteredEvents = events
+    if (eventsAsParticipantList) {
+      let filteredEvents = eventsAsParticipantList
         .map((p) => p.event)
         .filter(
           (event) => isToday(event.dateTime) || event.occurrence === 'DAILY',
@@ -34,7 +34,7 @@ const TodayEventsVerticalStepper = () => {
 
       setTodayEvents(filteredEvents);
     }
-  }, [events]);
+  }, [eventsAsParticipantList]);
 
   return todayEvents.length === 0 ? (
     <p className="text-muted-foreground">No events scheduled for today.</p>

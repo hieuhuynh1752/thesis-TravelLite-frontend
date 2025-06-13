@@ -18,10 +18,10 @@ export interface TravelHistoryChartProps {
 
 const TravelHistoryChart = ({ data }: TravelHistoryChartProps) => {
   return (
-    <Card className="p-4 pb-0 w-full h-full">
+    <Card className="w-full h-full border-none shadow-none">
       <CardContent className="p-0">
         <div>
-          <p className="text-xl font-semibold mb-4">
+          <p className="text-xl font-semibold px-2 border-l-4 border-primary text-primary bg-muted/30 rounded-r mb-4">
             Sustainability Metrics of Travel History{' '}
           </p>
         </div>
