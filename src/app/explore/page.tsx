@@ -68,10 +68,7 @@ export default function ExplorePage() {
             .filter((event) => isFuture(event.dateTime))
             .map((event, index) => {
               return (
-                <div
-                  key={index}
-                  className="w-full sm:w-[22rem] md:w-[20rem] lg:w-[22rem] xl:w-[24rem]"
-                >
+                <div key={index} className="w-full">
                   <Card className="h-full border-muted shadow-none transition-shadow duration-300 hover:shadow-md hover:shadow-muted flex flex-col">
                     <div className={'flex gap-2 p-4 pb-2'}>
                       <div className="flex flex-col text-primary border-2 border-muted rounded-xl h-fit">

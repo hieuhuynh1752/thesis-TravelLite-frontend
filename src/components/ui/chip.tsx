@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, Ellipsis, X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { EventParticipantStatus } from '../../../services/api/type.api';
 import {
   Tooltip,
@@ -30,19 +30,21 @@ const ParticipantChip = (props: ParticipantChipProps) => {
         <span
           className={`p-1 ${props.hasPlan ? 'bg-primary text-white' : 'bg-muted text-primary'}  font-semibold rounded-full`}
         >
-          <Check size={12} />{' '}
+          <Check size={16} />{' '}
         </span>
       );
     } else if (props.status === EventParticipantStatus.PENDING) {
       return (
-        <span className={`p-1 bg-gray-400 text-white rounded-full`}>
-          <Ellipsis size={12} />{' '}
+        <span
+          className={`p-1 bg-gray-400 text-white rounded-full w-6 h-6 font-semibold text-sm/4`}
+        >
+          ?
         </span>
       );
     } else if (props.status === EventParticipantStatus.DECLINED) {
       return (
         <span>
-          <X size={12} />{' '}
+          <X size={16} />{' '}
         </span>
       );
     }
@@ -98,11 +100,11 @@ const ParticipantChip = (props: ParticipantChipProps) => {
             className={`flex gap-2 ${props.isHost ? 'border-primary pl-1 pr-2' : props.hideClearButton ? 'border-primary pl-1 pr-2' : 'border-gray-400 px-1'} rounded-full border py-1 items-center text-sm ${props.hasPlan ? 'bg-muted/30 font-semibold text-primary' : ''}`}
           >
             <div
-              className={`rounded-full text-white w-5 flex justify-center ${props.isHost ? 'bg-gray-500 border-gray-500 italic w-full px-2' : 'bg-green-500'}`}
+              className={`rounded-full text-white flex justify-center ${props.isHost ? 'bg-gray-500 border-gray-500 italic w-full px-2' : 'bg-green-500'}`}
             >
               {getStatusIcon()}
             </div>
-            <p>{props.username}</p>
+            <p className={`font-medium`}>{props.username}</p>
             {!props.hideClearButton && (
               <Button
                 variant="ghost"

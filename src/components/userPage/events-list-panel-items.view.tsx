@@ -74,7 +74,7 @@ const EventsListPanelItems = ({
       // sort by nextDate (or reverse if extended)
       let sorted = filtered.sort((a, b) => {
         const diff = a.nextDate.getTime() - b.nextDate.getTime();
-        return extended ? -diff : diff;
+        return diff;
       });
 
       // if showAll, prepend truly past singletons

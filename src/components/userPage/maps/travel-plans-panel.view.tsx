@@ -9,10 +9,12 @@ import {
 } from '@/contexts/travel-context';
 import { getTravelPlanByParticipant } from '../../../../services/api/travel-plan.api';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import RoutesPanel from '@/components/userPage/maps/routes-panel.view';
 import { Separator } from '@/components/ui/separator';
 import TravelPlanOverviewCard from '@/components/userPage/travel-plan-overview-card.view';
+import login_landing from '@/img/login_landing.svg';
+import Image from 'next/image';
 
 export function TravelPlansPanel() {
   const { selectedEvent, eventsAsParticipantList } = useUserContext();
@@ -92,13 +94,13 @@ export function TravelPlansPanel() {
       <div className=" min-h-full flex overflow-y-auto flex-col bg-gray-100 p-2">
         {savedTravelPlan || showRoutesPanel ? (
           <div className={`flex flex-col gap-2 bg-white w-full`}>
-            <div className={`p-2 pb-0`}>
+            <div className={`p-2 pb-0 self-end`}>
               <Button
                 size={'sm'}
                 variant={'secondary'}
                 onClick={handleLoadTravelRoutes}
               >
-                <ArrowLeft size={12} /> Back
+                Close <X size={12} />
               </Button>
             </div>
             <Separator orientation={'horizontal'} />
@@ -111,7 +113,7 @@ export function TravelPlansPanel() {
                 <Plus size={12} /> Add Plan{' '}
               </Button>
             </div>
-            {savedTravelPlans &&
+            {savedTravelPlans && savedTravelPlans.length > 0 ? (
               savedTravelPlans.map((plan, index) => {
                 return (
                   <TravelPlanOverviewCard
@@ -122,7 +124,22 @@ export function TravelPlansPanel() {
                     fullWidth
                   />
                 );
-              })}
+              })
+            ) : (
+              <div>
+                <Image
+                  src={login_landing}
+                  alt="Image"
+                  className="h-2/3 w-2/3 m-auto dark:brightness-[0.2] dark:grayscale"
+                  sizes="(max-width: 768px) 100%, (max-width: 1200px) 50%, 33%"
+                  priority={true}
+                />
+                <p className={`w-fit m-auto p-4 mt-2 rounded-xl bg-white`}>
+                  Click the above &#34;Add Plan&#34; button to start planning
+                  your trips!
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

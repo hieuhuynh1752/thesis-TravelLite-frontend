@@ -386,7 +386,7 @@ const RoutesPanel = (props: RoutePanelProps) => {
                   size={'sm'}
                 >
                   <CalendarIcon size={14} />{' '}
-                  {date ? format(date, 'PPP') : <span>Pick a date</span>}
+                  {date ? format(date, 'PPP') : <span>Now</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">

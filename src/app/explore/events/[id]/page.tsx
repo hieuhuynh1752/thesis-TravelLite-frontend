@@ -9,11 +9,11 @@ import {
   Clock,
   MapPin,
   ScanText,
-  Share,
   UserCog,
   ClipboardPenLine,
   CheckCircle,
   ArrowLeft,
+  Link,
 } from 'lucide-react';
 import { APIProvider, Map } from '@vis.gl/react-google-maps';
 import { GoogleMapsContext } from '@/contexts/google-maps-context';
@@ -115,9 +115,17 @@ export default function EventDetailsPage() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant={'secondary'}>
-                <Share />
-                Share
+              <Button
+                variant={'secondary'}
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    `https://travellite-thesis-se4gd.life/explore/events/${event?.id}`,
+                  );
+                  toast('Event URL has been copied to your clipboard!');
+                }}
+              >
+                <Link />
+                Copy Event&#39;s URL
               </Button>
               {!!user &&
               event?.participants.find(

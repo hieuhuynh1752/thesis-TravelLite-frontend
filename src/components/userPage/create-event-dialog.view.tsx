@@ -471,7 +471,7 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
                     ref={participantsInputRef}
                   />
                 </div>
-                <CommandList className={'bg-muted'}>
+                <CommandList className={'bg-gray-50'}>
                   {allUsers !== null && participantInputValue !== '' && (
                     <>
                       {allUsers.length === 0 && (
@@ -542,7 +542,12 @@ const CreateOrUpdateEventDialog = (props: CreateOrUpdateEventDialogProps) => {
             <div className="grid grid-cols-3 w-full max-w-sm items-center gap-1.5">
               <div className="col-span-2">
                 <Label htmlFor="occurrence">Occurrence</Label>
-                <Select>
+                <Select
+                  onValueChange={(value) =>
+                    setOccurrence(value as EventOccurrence)
+                  }
+                  value={occurrence}
+                >
                   <SelectTrigger>
                     <SelectValue
                       placeholder={`Single (default)`}
