@@ -14,7 +14,6 @@ import {
   differenceInCalendarYears,
   format,
   parseISO,
-  isPast,
 } from 'date-fns';
 
 export type TravelHistoryDataType = {
@@ -50,12 +49,8 @@ export const getTravelHistoryData = (
   // Only include plans where the event date is in the past.
   let data: TravelHistoryDataType[] = events
     .flatMap((participant) => {
-      // If there is no travelPlan array or the event date isn't past, return an empty array.
-      if (
-        !participant.travelPlan ||
-        !Array.isArray(participant.travelPlan) ||
-        !isPast(participant.event.dateTime)
-      ) {
+      // If there is no travelPlan array return an empty array.
+      if (!participant.travelPlan || !Array.isArray(participant.travelPlan)) {
         return [];
       }
 
