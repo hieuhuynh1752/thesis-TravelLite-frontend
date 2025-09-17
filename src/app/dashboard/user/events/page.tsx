@@ -69,7 +69,7 @@ export default function UserEvents() {
                 <EventsListPanel extended />
                 <div
                   className={`flex flex-1 flex-col overflow-y-auto`}
-                  style={{ maxHeight: 'calc(90vh - 0.5rem)' }}
+                  style={{ maxHeight: 'calc(90vh - 1rem)' }}
                 >
                   <div className="h-fit">
                     <MapContainer />

@@ -51,7 +51,7 @@ export default function UserEvents() {
                 <div className="h-fit">
                   <MapContainer />
                 </div>
-                <div className="max-h-[50vh] flex">
+                <div className="h-full flex">
                   <EventsListPanel />
                   <Separator orientation="vertical" />
                   <EventDetailsPanel

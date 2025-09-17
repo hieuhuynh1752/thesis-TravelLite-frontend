@@ -80,11 +80,11 @@ function EventDetailsPanel({
   }, [getParticipantTravelDetails]);
 
   return (
-    <div className="w-full bg-white flex flex-col px-4 pt-2">
+    <div className="w-full bg-white flex flex-col pt-2">
       <div
         className={`h-full relative flex flex-col gap-2 pb-2 transition-all duration-500 ease-in-out overflow-y-auto`}
       >
-        <div className={'flex justify-between items-center'}>
+        <div className={'flex justify-between items-center pl-4'}>
           <div className="font-bold text-2xl">{selectedEvent?.title}</div>
           {selectedEvent?.creator.id === user?.id && (
             <CreateOrUpdateEventDialog
@@ -121,7 +121,7 @@ function EventDetailsPanel({
           )}
         </div>
         <Separator orientation={'horizontal'} />
-        <div className={`text-gray-700`}>
+        <div className={`text-gray-700 pl-4`}>
           <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
             <Clock size={16} className="self-center" />
             {'Date & Time: '}
@@ -142,14 +142,14 @@ function EventDetailsPanel({
               )
             : ''}
         </div>
-        <div className={`text-gray-700`}>
+        <div className={`text-gray-700 pl-4`}>
           <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
             <MapPin size={16} className="self-center" />
             {'At: '}
           </div>
           {selectedEvent ? selectedEvent.location.address : ''}
         </div>
-        <div className={`text-gray-700`}>
+        <div className={`text-gray-700 pl-4`}>
           <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
             <UserCog size={16} className="self-center" /> Host:{' '}
           </div>
@@ -159,7 +159,7 @@ function EventDetailsPanel({
               : selectedEvent.creator.name
             : 'undefined'}
         </div>
-        <div className={`text-gray-700 flex flex-col`}>
+        <div className={`text-gray-700 pl-4 flex flex-col`}>
           <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 w-fit rounded-r-md">
             <Users size={16} className="self-center" /> Participants:{' '}
           </div>
@@ -181,7 +181,7 @@ function EventDetailsPanel({
               </div>
             )}
         </div>
-        <div className={`text-gray-700`}>
+        <div className={`text-gray-700 pl-4`}>
           <div className="inline-flex text-primary font-medium items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md">
             <ScanText size={16} className="self-center" /> Description:
           </div>
@@ -191,7 +191,7 @@ function EventDetailsPanel({
       {extended && (
         <div className={`pt-4`}>
           <div>
-            <p className={`text-xl font-bold`}>
+            <p className={`text-xl font-bold pl-4`}>
               {adminMode ? 'Travel Plans Metrics' : 'Travel Plan Metrics'}
             </p>
             <Separator orientation={'horizontal'} />
@@ -328,7 +328,7 @@ function EventDetailsPanel({
                 participant.travelPlan.length,
             ) ? (
             <div className={`flex flex-col gap-2 pt-2`}>
-              <div className={`pt-2 flex flex-col gap-2`}>
+              <div className={`pt-2 px-4 flex flex-col gap-2`}>
                 <p
                   className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
                 >
@@ -339,7 +339,7 @@ function EventDetailsPanel({
                 </div>
               </div>
               <Separator orientation={'horizontal'} className={`my-4`} />
-              <div>
+              <div className={`px-4`}>
                 <p
                   className={`text-lg font-medium text-primary items-baseline gap-1 px-2 border-l-4 border-primary bg-muted/20 mr-2 rounded-r-md w-fit`}
                 >
@@ -349,17 +349,17 @@ function EventDetailsPanel({
                   This explains the rough emissions estimation of your Travel
                   Plan and compare it with other participants.
                 </p>
+                <HorizontalBarChart
+                  data={calculatePersonalEmissionRateOnEvent(
+                    selectedEvent?.participants,
+                    user!.id,
+                  )}
+                  xKey={'name'}
+                  yKey={'value'}
+                />
               </div>
-              <HorizontalBarChart
-                data={calculatePersonalEmissionRateOnEvent(
-                  selectedEvent?.participants,
-                  user!.id,
-                )}
-                xKey={'name'}
-                yKey={'value'}
-              />
               <Separator orientation={'horizontal'} className={`my-4`} />
-              <div className={`flex gap-4 w-full`}>
+              <div className={`flex gap-4 w-full px-4`}>
                 <div className={`flex flex-col gap-4 w-1/2`}>
                   <div>
                     <p
@@ -418,7 +418,7 @@ function EventDetailsPanel({
         <div
           className={`min-h-fit flex flex-col gap-4 border-t-2 border-gray-200 transition-all duration-600 ease-in-out overflow-hidden`}
         >
-          <div className={`flex justify-between items-center py-1`}>
+          <div className={`flex justify-between items-center py-4 pl-4`}>
             <div className="inline-flex items-baseline gap-1 pr-2 text-gray-500 text-2xl">
               <MapPin size={24} className="self-center" /> Location:{' '}
               {selectedEvent?.location.name}
